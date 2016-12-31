@@ -45,8 +45,8 @@ Run.GameState = {
         this.player.lotus = 0;
         
         //monk
-        //this.initMonks();
-        //this.monkTimer = this.game.time.events.loop(Phaser.Timer.SECOND * 1.5, this.createMonk, this);
+        this.initMonks();
+        this.monkTimer = this.game.time.events.loop(Phaser.Timer.SECOND * 1.5, this.createMonk, this);
         
         //temple
         this.initTemple();
@@ -117,7 +117,9 @@ Run.GameState = {
             monk.reset(this.game.rnd.between(0,this.game.world.width), 0);
         }
         
+        monk.life = true;
         monk.body.velocity.y = this.MONK_SPEED;
+        
     },
     
     initTemple: function() {
@@ -167,8 +169,16 @@ Run.GameState = {
     damagePlayer: function(player, monk) {
         //console.log('damage!');
         //console.log(player.health);
-        player.damage(0.005);
-        this.ouch(player,monk);
+        if(monk.life) {
+            player.damage(1);
+            this.ouch(player,monk);
+            monk.life = false;
+        }
+        else {
+            this.ouch(player,monk);
+            return;
+        }
+        
     },
     
     ouch: function(player,monk) {
@@ -188,11 +198,12 @@ Run.GameState = {
     
     pray: function(player, temple) {
         if(temple.life) {
-            console.log('touch temple!!')
+            console.log('touch temple!!');
             if(player.lotus > 0) {
                 console.log('pray with lotus. current lotuses:');
                 console.log(player.lotus);
                 player.lotus -= 1;
+                //this.game.time.events.add(Phaser.Timer.SECOND * 2, this.stopToPray, this, player);
             }
             temple.life = false;
         }
@@ -207,5 +218,12 @@ Run.GameState = {
         this.lotusNumText.text = this.player.lotus;
         this.pointText.text = this.player.health;
         
-    }
+    },
+    
+    //stopToPray: function(player) {
+       //this.input.disabled = true;
+        //player.animations.stop();
+        //player.body.velocity.y = 340;
+        //player.body.velocity.x = 0;
+    //}
 };
