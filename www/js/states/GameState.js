@@ -57,11 +57,11 @@ Run.GameState = {
         this.lotusTimer = this.game.time.events.loop(Phaser.Timer.SECOND * 2, this.createLotus, this);
         
         //stats
-        var style = {font: '20px Arial', fill: '#fff'}
-        this.game.add.text(10, 20, 'Lotus:', style)
-        this.game.add.text(10, 50, 'Boon Points:', style)
+        var style = {font: '20px Arial', fill: '#fff'};
+        this.game.add.text(10, 20, 'Lotus:', style);
+        this.game.add.text(10, 50, 'Boon Points:', style);
         this.lotusNumText = this.game.add.text(80, 20, '', style);
-        this.pointText = this.game.add.text(130, 50, '', style)
+        this.pointText = this.game.add.text(130, 50, '', style);
         
     },
     
@@ -87,7 +87,11 @@ Run.GameState = {
         this.game.physics.arcade.overlap(this.player, this.monks, this.damagePlayer, null, this);
         this.game.physics.arcade.overlap(this.player, this.lotuses, this.collectLotus, null, this);
         this.game.physics.arcade.overlap(this.player, this.temples, this.pray, null, this);
-      
+        //if(this.player.touch) {
+            //this.player.lotus -= this.player.touch/this.player.touch;
+          //  this.player.touch = false;
+        //}
+    
         //stats
         this.refreshStats();
     },
@@ -124,14 +128,17 @@ Run.GameState = {
     createTemple: function() {
         var temple = this.temples.getFirstExists(false);
         
+        
         if(!temple) {
             temple = new Run.Temple(this.game, this.game.rnd.between(0,this.game.world.width), 0);
             this.temples.add(temple);
         }
         else {
             temple.reset(this.game.rnd.between(0,this.game.world.width), 0);
+            
         }
         
+        temple.life = true;
         temple.body.velocity.y = this.GRASS_SPEED;
         
     },
@@ -161,10 +168,10 @@ Run.GameState = {
         //console.log('damage!');
         //console.log(player.health);
         player.damage(0.005);
-        this.ouch(player);
+        this.ouch(player,monk);
     },
     
-    ouch: function(player) {
+    ouch: function(player,monk) {
         //console.log('ouch!');
         this.hurt = this.add.sprite(player.x, player.top, 'hurt');
         this.hurt.scale.x = 3;
@@ -180,12 +187,20 @@ Run.GameState = {
     },
     
     pray: function(player, temple) {
-        console.log('touch temple!!')
-        if(player.lotus > 0) {
-            console.log('pray with lotus. current lotuses:');
-            console.log(player.lotus);
-            player.lotus -= 1;
+        if(temple.life) {
+            console.log('touch temple!!')
+            if(player.lotus > 0) {
+                console.log('pray with lotus. current lotuses:');
+                console.log(player.lotus);
+                player.lotus -= 1;
+            }
+            temple.life = false;
         }
+        else {
+            console.log('this temple is dead')
+            return;
+        }
+
     },
     
     refreshStats: function() {
