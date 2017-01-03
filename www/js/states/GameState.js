@@ -43,10 +43,11 @@ Run.GameState = {
         this.animate(this.player, 42, 43, 44);
         this.player.health = 10;
         this.player.lotus = 0;
+        this.player.praying = false;
         
         //monk
-        this.initMonks();
-        this.monkTimer = this.game.time.events.loop(Phaser.Timer.SECOND * 1.5, this.createMonk, this);
+        //this.initMonks();
+        //this.monkTimer = this.game.time.events.loop(Phaser.Timer.SECOND * 1.5, this.createMonk, this);
         
         //temple
         this.initTemple();
@@ -66,20 +67,30 @@ Run.GameState = {
     },
     
     update: function() {
-        this.player.body.velocity.x = 0;
-        this.player.body.velocity.y = 0;
+        if(this.player.praying) {
+            this.player.body.velocity.x = 0;
+            this.player.body.velocity.y = this.GRASS_SPEED;
+        }
+        else{
+            this.player.body.velocity.x = 0;
+            this.player.body.velocity.y = 0;
         
-        if(this.game.input.keyboard.isDown(Phaser.Keyboard.LEFT)) {
-            this.player.body.velocity.x -= this.PLAYER_SPEED;
-        }
-        else if(this.game.input.keyboard.isDown(Phaser.Keyboard.RIGHT)) {
-            this.player.body.velocity.x += this.PLAYER_SPEED;
-        }
-        else if(this.game.input.keyboard.isDown(Phaser.Keyboard.UP)) {
-            this.player.body.velocity.y -= this.PLAYER_SPEED;
-        }
-        else if(this.game.input.keyboard.isDown(Phaser.Keyboard.DOWN)) {
-            this.player.body.velocity.y += this.PLAYER_SPEED;
+            if(this.game.input.keyboard.isDown(Phaser.Keyboard.LEFT)) {
+                console.log("LEFT");
+                this.player.body.velocity.x -= this.PLAYER_SPEED;
+            }
+            else if(this.game.input.keyboard.isDown(Phaser.Keyboard.RIGHT)) {
+                console.log("RIGHT");
+                this.player.body.velocity.x += this.PLAYER_SPEED;
+            }
+            else if(this.game.input.keyboard.isDown(Phaser.Keyboard.UP)) {
+                console.log("UP");
+                this.player.body.velocity.y -= this.PLAYER_SPEED;
+            }
+            else if(this.game.input.keyboard.isDown(Phaser.Keyboard.DOWN)) {
+                console.log("DOWN");
+                this.player.body.velocity.y += this.PLAYER_SPEED;
+            }
         }
         
         
@@ -146,7 +157,7 @@ Run.GameState = {
     },
     
     initLotus: function() {
-        console.log('initLotus is called');
+        //console.log('initLotus is called');
         this.lotuses = this.add.group();
         this.lotuses.enableBody = true;
     },
@@ -191,24 +202,26 @@ Run.GameState = {
     
     collectLotus: function(player, lotus) {
         player.lotus += 1;
-        console.log('collected lotus. current lotuses:');
-        console.log(player.lotus);
+        //console.log('collected lotus. current lotuses:');
+        //console.log(player.lotus);
         lotus.kill();
     },
     
     pray: function(player, temple) {
         if(temple.life) {
-            console.log('touch temple!!');
+            //console.log('touch temple!!');
             if(player.lotus > 0) {
-                console.log('pray with lotus. current lotuses:');
-                console.log(player.lotus);
+                //console.log('pray with lotus. current lotuses:');
+                //console.log(player.lotus);
                 player.lotus -= 1;
-                //this.game.time.events.add(Phaser.Timer.SECOND * 2, this.stopToPray, this, player);
+                this.stopToPray();
+                this.game.time.events.add(Phaser.Timer.SECOND * 1, this.continueRunning, this);
+                //player.animations.play();
             }
             temple.life = false;
         }
         else {
-            console.log('this temple is dead')
+            //console.log('this temple is dead');
             return;
         }
 
@@ -220,10 +233,29 @@ Run.GameState = {
         
     },
     
-    //stopToPray: function(player) {
-       //this.input.disabled = true;
+    stopToPray: function() {
+        console.log('=====stop to pray...=====');
+        //this.input.disabled = true;
+        this.player.praying = true;
+        console.log('velocity x:');
+        console.log(this.player.body.velocity.x);
+        console.log('velocity y:');
+        console.log(this.player.body.velocity.y);
+        console.log(this.player.praying);
         //player.animations.stop();
-        //player.body.velocity.y = 340;
+        
+        //player.body.velocity.y = this.GRASS_SPEED;
         //player.body.velocity.x = 0;
-    //}
+    },
+    
+    continueRunning: function() {
+        console.log('=====done. continue running...=====');
+        this.player.praying = false;
+        //this.input.disabled = false;
+        console.log('velocity x:');
+        console.log(this.player.body.velocity.x);
+        console.log('velocity y:');
+        console.log(this.player.body.velocity.y);
+        console.log(this.player.praying);
+    }
 };
