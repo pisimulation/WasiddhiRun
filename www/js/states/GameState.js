@@ -19,6 +19,7 @@ Run.GameState = {
         this.load.image('hurt', 'assets/images/hurt.png');
         this.load.image('temple', 'assets/images/temple.png');
         this.load.image('lotus', 'assets/images/lotus.png');
+        this.load.image('boon', 'assets/images/oneboon.png', 32, 32, 3);
     },
     
     create: function() {
@@ -46,8 +47,8 @@ Run.GameState = {
         this.player.praying = false;
         
         //monk
-        //this.initMonks();
-        //this.monkTimer = this.game.time.events.loop(Phaser.Timer.SECOND * 1.5, this.createMonk, this);
+        this.initMonks();
+        this.monkTimer = this.game.time.events.loop(Phaser.Timer.SECOND * 1.5, this.createMonk, this);
         
         //temple
         this.initTemple();
@@ -70,8 +71,11 @@ Run.GameState = {
         if(this.player.praying) {
             this.player.body.velocity.x = 0;
             this.player.body.velocity.y = this.GRASS_SPEED;
+            
+            this.alert(this.player, 'boon')
         }
         else{
+            this.player.animations.play();
             this.player.body.velocity.x = 0;
             this.player.body.velocity.y = 0;
         
@@ -153,7 +157,7 @@ Run.GameState = {
         
         temple.life = true;
         temple.body.velocity.y = this.GRASS_SPEED;
-        
+        temple.body.setSize(7, 1, 5, 13);
     },
     
     initLotus: function() {
@@ -182,19 +186,19 @@ Run.GameState = {
         //console.log(player.health);
         if(monk.life) {
             player.damage(1);
-            this.ouch(player,monk);
+            this.alert(player, 'hurt');
             monk.life = false;
         }
         else {
-            this.ouch(player,monk);
+            this.alert(player, 'hurt');
             return;
         }
         
     },
     
-    ouch: function(player,monk) {
+    alert: function(player, key) {
         //console.log('ouch!');
-        this.hurt = this.add.sprite(player.x, player.top, 'hurt');
+        this.hurt = this.add.sprite(player.x, player.top, key);
         this.hurt.scale.x = 3;
         this.hurt.scale.y = 3;
         this.hurt.lifespan = 1.5;
@@ -214,8 +218,12 @@ Run.GameState = {
                 //console.log('pray with lotus. current lotuses:');
                 //console.log(player.lotus);
                 player.lotus -= 1;
-                this.stopToPray();
-                this.game.time.events.add(Phaser.Timer.SECOND * 1, this.continueRunning, this);
+                //this.alert(player,'boon');
+                this.stopToPray(player);
+            
+            
+                this.game.time.events.add(Phaser.Timer.SECOND * 1, this.continueRunning, this, player);
+                //this.alert(player,'boon');
                 //player.animations.play();
             }
             temple.life = false;
@@ -233,29 +241,35 @@ Run.GameState = {
         
     },
     
-    stopToPray: function() {
-        console.log('=====stop to pray...=====');
+    stopToPray: function(player) {
+        //this.alert(player, 'boon');
+        //console.log('=====stop to pray...=====');
         //this.input.disabled = true;
-        this.player.praying = true;
-        console.log('velocity x:');
-        console.log(this.player.body.velocity.x);
-        console.log('velocity y:');
-        console.log(this.player.body.velocity.y);
-        console.log(this.player.praying);
+        player.praying = true;
+        player.animations.paused = true;
+        //console.log('velocity x:');
+        //console.log(this.player.body.velocity.x);
+        //console.log('velocity y:');
+        //console.log(this.player.body.velocity.y);
+        //console.log(this.player.praying);
         //player.animations.stop();
         
         //player.body.velocity.y = this.GRASS_SPEED;
         //player.body.velocity.x = 0;
     },
     
-    continueRunning: function() {
-        console.log('=====done. continue running...=====');
-        this.player.praying = false;
+    continueRunning: function(player) {
+        player.health += 1;
+        //console.log('=====done. continue running...=====');
+        player.praying = false;
+        player.animations.paused = false;
+        //this.ouch(player);
+        //this.sadhu(player);
         //this.input.disabled = false;
-        console.log('velocity x:');
-        console.log(this.player.body.velocity.x);
-        console.log('velocity y:');
-        console.log(this.player.body.velocity.y);
-        console.log(this.player.praying);
+        //console.log('velocity x:');
+        //console.log(this.player.body.velocity.x);
+        //console.log('velocity y:');
+        //console.log(this.player.body.velocity.y);
+        //console.log(this.player.praying);
     }
 };
