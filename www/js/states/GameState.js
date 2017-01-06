@@ -125,21 +125,57 @@ Run.GameState = {
         this.initLotus();
         this.lotusTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.levelData.lotusFrequency, this.createLotus, this);
         
-        
-        
-        
         //monk
         this.initMonks();
-        //this.monkTimer = this.game.time.events.loop(Phaser.Timer.SECOND * 0, this.createMonk, this, monkType);
-        //schedule monks
-        //this.scheduleNextMonk(this.levelData.monkType, this.levelData.monks[this.currentMonkIndex].speedY);
         this.scheduleNextMonk();
+        
+        //touchable
+        //console.log('monk type: ' + this.levelData.monkType);
+        //console.log('player type: ' + this.levelData.player);
+        /*
+        switch(this.levelData.monkType, this.levelData.player) {
+                case ("maleMonk", "man"):
+                    console.log('!!!!!MM!!!!!!');
+                    console.log('monk type: ' + this.levelData.monkType);
+                    console.log('player type: ' + this.levelData.player);
+                    this.touchable = true;
+                    break;
+                case ("maleMonk", "woman"):
+                    console.log('!!!!!!MF!!!!!!');
+                    console.log('monk type: ' + this.levelData.monkType);
+                    console.log('player type: ' + this.levelData.player);
+                    this.touchable = false;
+                    break;
+                case ("femaleMonk", "man"): //accurate??
+                    console.log('!!!!!!!FM!!!!!!!');
+                    console.log('monk type: ' + this.levelData.monkType);
+                    console.log('player type: ' + this.levelData.player);
+                    this.touchable = false;
+                    break;
+                case ("femaleMonk", "woman"):
+                    console.log('!!!!!!!!FF!!!!!!');
+                    console.log('monk type: ' + this.levelData.monkType);
+                    console.log('player type: ' + this.levelData.player);
+                    this.touchable = true;
+                    break;
+        }
+        */
+        
+        switch (this.levelData.monkType) {
+            case "maleMonk":
+                this.touchable = this.levelData.player == "man" ? true : false;
+                break;
+            case "femaleMonk":
+                this.touchable = this.levelData.player == "woman" ? true : false;
+                break;
+        }
     },
     
     scheduleNextMonk: function() {
         console.log('scheduleNextMonk is called');
         var nextMonk = this.levelData.monks[this.currentMonkIndex];
-        
+        //var monkType = this.levelData.monkType;
+        //var playerType = this.levelData.player;
         if(nextMonk) {
             //console.log('there is nextMonk')
             var nextTime = 1000 * (nextMonk.time - (this.currentMonkIndex == 0 ? 0 : this.levelData.monks[this.currentMonkIndex - 1].time));
@@ -182,7 +218,7 @@ Run.GameState = {
         }
         
         //collision
-        this.game.physics.arcade.overlap(this.player, this.monks, this.damagePlayer, null, this);
+        this.game.physics.arcade.overlap(this.player, this.monks, this.damageOrHeal, null, this);
         this.game.physics.arcade.overlap(this.player, this.lotuses, this.collectLotus, null, this);
         this.game.physics.arcade.overlap(this.player, this.temples, this.pray, null, this);
     
@@ -196,7 +232,7 @@ Run.GameState = {
     },
     
     initMonks: function() {
-        console.log('initMonks is called')
+        console.log('initMonks is called');
         this.monks = this.add.group();
         this.monks.enableBody = true;
     },
@@ -261,14 +297,16 @@ Run.GameState = {
         lotus.body.velocity.y = this.GRASS_SPEED;
     },
     
-    damagePlayer: function(player, monk) {
+    damageOrHeal: function(player, monk) {
+        console.log("touchable?: " + this.touchable);
+        var alertMsg = this.touchable ? 'boon': 'hurt';
         if(monk.life) {
-            player.damage(1);
-            this.alert(player, 'hurt');
+            this.touchable ? player.heal(1) : player.damage(1);
+            this.alert(player, alertMsg);
             monk.life = false;
         }
         else {
-            this.alert(player, 'hurt');
+            this.alert(player, alertMsg);
             return;
         }
         
