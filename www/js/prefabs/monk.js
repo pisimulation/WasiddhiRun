@@ -1,7 +1,7 @@
 var Run = Run || {};
 
-Run.Monk = function(game, x, y, frame) {
-    Phaser.Sprite.call(this, game, x, y, 'monk', 1);
+Run.Monk = function(game, x, y, key) {
+    Phaser.Sprite.call(this, game, x, y, key, 1);
     this.anchor.setTo(0.5);
     this.scale.x = 3;
     this.scale.y = 3;

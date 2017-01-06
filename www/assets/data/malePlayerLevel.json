@@ -1,0 +1,30 @@
+{
+    "duration": 13,
+    "player": "man",
+    "monkType": "maleMonk",
+    "templeFrequency": 100,
+    "lotusFrequency": 100,
+    "monks":
+    [
+        {
+            "time": 1,
+            "frequency": 1.5,
+            "speedY": 200
+        },
+        {
+            "time": 3,
+            "frequency": 1.5,
+            "speedY": 230
+        },
+        {
+            "time": 7,
+            "frequency": 1,
+            "speedY": 230   
+        },
+        {
+            "time": 10,
+            "frequency": 0.5,
+            "speedY": 230
+        }
+    ]
+}
