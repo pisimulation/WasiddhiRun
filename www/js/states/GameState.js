@@ -16,7 +16,6 @@ Run.GameState = {
         this.MONK_SPEED = 200;
         
         //level data
-        //this.numLevels = 3;
         this.levels = ["normal", "femaleMonk", "malePlayer"];
         this.currentLevel = currentLevel ? currentLevel : this.levels[0];
         console.log('current level: ' + this.currentLevel);
@@ -32,6 +31,7 @@ Run.GameState = {
         this.load.image('temple', 'assets/images/temple.png');
         this.load.image('lotus', 'assets/images/lotus.png');
         this.load.image('boon', 'assets/images/oneboon.png', 32, 32, 3);
+        this.load.spritesheet('dyingPlayer', 'assets/images/dyingPlayer.png', 42, 42, 9);
         
         //load level data
         this.load.text('normalLevel', 'assets/data/normalLevel.json');
@@ -64,15 +64,11 @@ Run.GameState = {
         this.currentMonkIndex = 0;
         
         this.levelData = JSON.parse(this.game.cache.getText(this.currentLevel + "Level"));
-        console.log(this.levelData);
         
         this.endOfLevelTimer = this.game.time.events.add(this.levelData.duration * 1000, function() {
             var currentLevelIndex = this.levels.indexOf(this.currentLevel);
-            console.log('currentLevelIndex: ' + currentLevelIndex);
             if(currentLevelIndex < this.levels.length) {
-                console.log('currentLevelIndex++: ' + currentLevelIndex++);
                 this.currentLevel = this.levels[currentLevelIndex++];
-                console.log(this.currentLevel);
             }
             else {
                 //end of game
@@ -111,56 +107,32 @@ Run.GameState = {
         this.player.scale.y = 3;
         this.game.physics.arcade.enable(this.player);
         this.player.body.collideWorldBounds = true;
-        this.animate(this.player, walk1, walk2, walk3);
-        this.player.health = 10;
+        this.animate(this.player, [walk1, walk2, walk3]);
+        this.player.health = 1;
         this.player.lotus = 0;
         this.player.praying = false;
+        this.player.alive = true;
         
         
         //temple
         this.initTemple();
         this.templeTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.levelData.templeFrequency, this.createTemple, this);
         
+        
+        
         //lotus
         this.initLotus();
         this.lotusTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.levelData.lotusFrequency, this.createLotus, this);
+        
+        
         
         //monk
         this.initMonks();
         this.scheduleNextMonk();
         
-        //touchable
-        //console.log('monk type: ' + this.levelData.monkType);
-        //console.log('player type: ' + this.levelData.player);
-        /*
-        switch(this.levelData.monkType, this.levelData.player) {
-                case ("maleMonk", "man"):
-                    console.log('!!!!!MM!!!!!!');
-                    console.log('monk type: ' + this.levelData.monkType);
-                    console.log('player type: ' + this.levelData.player);
-                    this.touchable = true;
-                    break;
-                case ("maleMonk", "woman"):
-                    console.log('!!!!!!MF!!!!!!');
-                    console.log('monk type: ' + this.levelData.monkType);
-                    console.log('player type: ' + this.levelData.player);
-                    this.touchable = false;
-                    break;
-                case ("femaleMonk", "man"): //accurate??
-                    console.log('!!!!!!!FM!!!!!!!');
-                    console.log('monk type: ' + this.levelData.monkType);
-                    console.log('player type: ' + this.levelData.player);
-                    this.touchable = false;
-                    break;
-                case ("femaleMonk", "woman"):
-                    console.log('!!!!!!!!FF!!!!!!');
-                    console.log('monk type: ' + this.levelData.monkType);
-                    console.log('player type: ' + this.levelData.player);
-                    this.touchable = true;
-                    break;
-        }
-        */
         
+        
+        //touchable
         switch (this.levelData.monkType) {
             case "maleMonk":
                 this.touchable = this.levelData.player == "man" ? true : false;
@@ -169,20 +141,23 @@ Run.GameState = {
                 this.touchable = this.levelData.player == "woman" ? true : false;
                 break;
         }
+        
+        //counter
+        this.counter = 0
     },
     
     scheduleNextMonk: function() {
-        console.log('scheduleNextMonk is called');
-        var nextMonk = this.levelData.monks[this.currentMonkIndex];
-        //var monkType = this.levelData.monkType;
-        //var playerType = this.levelData.player;
+        //console.log('scheduleNextMonk is called');
+        nextMonk = this.levelData.monks[this.currentMonkIndex];
+        this.monkTimer;
         if(nextMonk) {
-            //console.log('there is nextMonk')
+            //console.log('player is alive');
             var nextTime = 1000 * (nextMonk.time - (this.currentMonkIndex == 0 ? 0 : this.levelData.monks[this.currentMonkIndex - 1].time));
-            console.log('nextTime: ' + nextTime);
             this.nextMonkTimer = this.game.time.events.add(nextTime, function() {
-                this.game.time.events.loop(Phaser.Timer.SECOND * nextMonk.frequency, this.createMonk, this, this.levelData.monkType, nextMonk.speedY);
-                //this.createMonk(this.levelData.monkType, nextMonk.speedY);
+                this.monkTimer = this.game.time.events.loop(Phaser.Timer.SECOND * nextMonk.frequency, this.createMonk, this, this.levelData.monkType, nextMonk.speedY);
+                //if(!this.player.alive) {
+                  //  this.game.time.events.remove(this.monkTimer);
+                //}
                 this.currentMonkIndex++;
                 this.scheduleNextMonk();
                 
@@ -224,29 +199,66 @@ Run.GameState = {
     
         //stats
         this.refreshStats();
+        
+        //die
+        
+        if(!this.player.alive && this.counter == 0) {
+            //this.game.state.paused = true;// = true;
+            this.background.stopScroll();
+            this.temples.forEach(function(temple) {
+                temple.body.velocity.y = 0;
+            }, this)
+            this.monks.forEach(function(monk) {
+                monk.body.velocity.y = 0;
+                monk.animations.stop();
+            }, this)
+            this.lotuses.forEach(function(lotus) {
+                lotus.body.velocity.y = 0;
+            }, this)
+            this.game.time.events.remove(this.templeTimer);
+            this.game.time.events.remove(this.lotusTimer);
+            this.game.time.events.remove(this.monkTimer);
+            this.game.time.events.remove(this.nextMonkTimer);
+            
+            this.die(this.player);
+            //this.player.alive = false;
+            console.log('restarting game');
+            this.counter++;
+            //this.game.lockRender = true;
+            //this.game.time.events.add(Phaser.Timer.SECOND * 2, this.pauseGame, this);
+        }
+        
     },
-    
-    animate: function(sprite,walk1,walk2,walk3) {
-        sprite.animations.add('walk',[walk1,walk2,walk3]);
-        sprite.animations.play('walk', 5, true);
+    /*
+    pauseGame: function() {
+        console.log('paused game');
+        
+        this.game.paused = true;
+        this.die(this.player);
+    },
+    */
+    animate: function(sprite, movingArray) {
+        sprite.animations.add('move', movingArray);
+        sprite.animations.play('move', 5, true);
     },
     
     initMonks: function() {
-        console.log('initMonks is called');
         this.monks = this.add.group();
         this.monks.enableBody = true;
     },
     
     createMonk: function(monkType, monkSpeedY) {
+        if(!this.player.alive) {
+            return;
+        }
+        console.log('createMonk is called!!!')
         var monk = this.monks.getFirstExists(false);
         
         if(!monk) {
-            //console.log('there is no monk. need to create one');
             monk = new Run.Monk(this.game, this.game.rnd.between(0,this.game.world.width), 0, monkType);
             this.monks.add(monk);
         }
         else {
-            //console.log('monk exists. just gonna reset position')
             monk.reset(this.game.rnd.between(0,this.game.world.width), 0);
         }
         
@@ -309,11 +321,12 @@ Run.GameState = {
             this.alert(player, alertMsg);
             return;
         }
-        
+        if(player.health == 0) {
+            player.alive = false;
+        }
     },
     
     alert: function(player, key) {
-        //console.log('ouch!');
         this.hurt = this.add.sprite(player.x, player.top, key);
         this.hurt.scale.x = 3;
         this.hurt.scale.y = 3;
@@ -330,8 +343,6 @@ Run.GameState = {
             if(player.lotus > 0) {
                 player.lotus -= 1;
                 this.stopToPray(player);
-            
-            
                 this.game.time.events.add(Phaser.Timer.SECOND * 1, this.continueRunning, this, player);
             }
             temple.life = false;
@@ -359,4 +370,24 @@ Run.GameState = {
         player.animations.paused = false;
     },
     
+    die: function(player) {
+        console.log('player dies')
+        /*
+        Phaser.Sprite.call(this, this.game, player.body.x, player.body.y, 'dyingPlayer', 0);
+        this.anchor.setTo(0.5);
+        this.scale.x = 3;
+        this.scale.y = 3;
+        this.animate(this, [0, 1, 2, 3, 4, 5, 6, 7, 8]);
+        */
+        
+        this.dyingPlayer = this.add.sprite(player.body.x + 50,
+                                           player.body.y + 57,
+                                           'dyingPlayer',
+                                           1);
+        this.dyingPlayer.anchor.setTo(0.5);
+        this.dyingPlayer.scale.x = 3;
+        this.dyingPlayer.scale.y = 3;
+        this.animate(this.dyingPlayer, [0,1,2,3,4,5,6,7,8]);
+        
+    }
 };
