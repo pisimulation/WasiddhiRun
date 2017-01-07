@@ -251,7 +251,7 @@ Run.GameState = {
         if(!this.player.alive) {
             return;
         }
-        console.log('createMonk is called!!!')
+
         var monk = this.monks.getFirstExists(false);
         
         if(!monk) {
