@@ -13,7 +13,15 @@ Run.GameState = {
         //constants
         this.PLAYER_SPEED = 350;
         this.GRASS_SPEED = 170;
-        this.MONK_SPEED = 200;
+        this.WOMAN_STAND = 43;
+        this.WOMAN_WALK1 = 42;
+        this.WOMAN_WALK2 = 43;
+        this.WOMAN_WALK3 = 44;
+        
+        this.MAN_STAND = 37;
+        this.MAN_WALK1 = 36;
+        this.MAN_WALK2 = 37;
+        this.MAN_WALK3 = 38;
         
         //level data
         this.levels = ["normal", "femaleMonk", "malePlayer"];
@@ -56,6 +64,8 @@ Run.GameState = {
         this.lotusNumText = this.game.add.text(80, 20, '', style);
         this.pointText = this.game.add.text(130, 50, '', style);
         
+        
+        
         //levels
         this.loadLevel();
     },
@@ -80,22 +90,18 @@ Run.GameState = {
         //init level
         
         //player
-        //var stand;
-        //this walk1;
-        //this walk2;
-        //this walk3;
         switch(this.levelData.player) {
             case "woman":
-                this.stand = 43;
-                this.walk1 = 42;
-                this.walk2 = 43;
-                this.walk3 = 44;
+                this.stand = this.WOMAN_STAND;
+                this.walk1 = this.WOMAN_WALK1;
+                this.walk2 = this.WOMAN_WALK2;
+                this.walk3 = this.WOMAN_WALK3;
                 break;
             case "man":
-                this.stand = 37;
-                this.walk1 = 36;
-                this.walk2 = 37;
-                this.walk3 = 38;
+                this.stand = this.MAN_STAND;
+                this.walk1 = this.MAN_WALK1;
+                this.walk2 = this.MAN_WALK2;
+                this.walk3 = this.MAN_WALK3;
                 break;         
         }
         this.player = this.add.sprite(this.game.world.centerX,
@@ -107,11 +113,13 @@ Run.GameState = {
         this.player.scale.y = 3;
         this.game.physics.arcade.enable(this.player);
         this.player.body.collideWorldBounds = true;
-        this.animate(this.player, [this.walk1, this.walk2, this.walk3], 7);
+
+        this.animate(this.player, [this.walk1, this.walk2, this.walk3], 6);
         this.player.health = 1;
         this.player.lotus = 0;
         this.player.praying = false;
         this.player.alive = true;
+        //this.walkFaster = false
         
         
         //temple
@@ -143,7 +151,8 @@ Run.GameState = {
         }
         
         //counter
-        this.counter = 0;
+
+        this.dieCounter = 0;
     },
     
     scheduleNextMonk: function() {
@@ -165,11 +174,14 @@ Run.GameState = {
     },
     
     getRandomSpeedY: function(nextMonk) {
+
         var speeds = nextMonk.speedY;
         return speeds[Math.floor(Math.random()*speeds.length)];
     },
     
     update: function() {
+        //this.walkFaster = false;
+        this.player.animations.currentAnim.speed = 6
         if(this.player.praying) {
             this.player.body.velocity.x = 0;
             this.player.body.velocity.y = this.GRASS_SPEED;
@@ -177,7 +189,7 @@ Run.GameState = {
             this.alert(this.player, 'boon');
         }
         else{
-            this.player.animations.play();
+            //this.player.animations.play();
             this.player.body.velocity.x = 0;
             this.player.body.velocity.y = 0;
         
@@ -189,11 +201,23 @@ Run.GameState = {
                 this.player.body.velocity.x += this.PLAYER_SPEED;
             }
             else if(this.game.input.keyboard.isDown(Phaser.Keyboard.UP)) {
+                this.player.animations.currentAnim.speed = 20
+                //this.walkFaster = true
+                //this.animate(this.player, [this.walk1, this.walk2, this.walk3], 10);
+                //this.player.animations.play();
                 this.player.body.velocity.y -= this.PLAYER_SPEED;
+                
             }
             else if(this.game.input.keyboard.isDown(Phaser.Keyboard.DOWN)) {
                 this.player.body.velocity.y += this.PLAYER_SPEED;
             }
+            
+            /*if(this.walkFaster = true) {
+                this.animate(this.player, [this.walk1, this.walk2, this.walk3], 10);
+            }
+            else {
+                this.animate(this.player, [this.walk1, this.walk2, this.walk3], 6);
+            }*/
         }
         
         //collision
@@ -206,7 +230,7 @@ Run.GameState = {
         
         //die
         
-        if(!this.player.alive && this.counter == 0) {
+        if(!this.player.alive && this.dieCounter == 0) {
             //this.game.state.paused = true;// = true;
             this.background.stopScroll();
             this.temples.forEach(function(temple) {
@@ -227,7 +251,7 @@ Run.GameState = {
             this.die(this.player);
             //this.player.alive = false;
             console.log('restarting game');
-            this.counter++;
+            this.dieCounter++;
             //this.game.lockRender = true;
             //this.game.time.events.add(Phaser.Timer.SECOND * 2, this.pauseGame, this);
         }
@@ -391,7 +415,7 @@ Run.GameState = {
         this.dyingPlayer.anchor.setTo(0.5);
         this.dyingPlayer.scale.x = 3;
         this.dyingPlayer.scale.y = 3;
-        this.animate(this.dyingPlayer, [0,1,2,3,4,5,6,7,8], 4);
+        this.animate(this.dyingPlayer, [0,1,2,3,4,5,6,7,8], 7);
         
     }
 };
