@@ -113,7 +113,6 @@ Run.GameState = {
         this.player.scale.y = 3;
         this.game.physics.arcade.enable(this.player);
         this.player.body.collideWorldBounds = true;
-
         this.animate(this.player, [this.walk1, this.walk2, this.walk3], 6);
         this.player.health = 1;
         this.player.lotus = 0;
@@ -151,7 +150,6 @@ Run.GameState = {
         }
         
         //counter
-
         this.dieCounter = 0;
     },
     
@@ -174,7 +172,6 @@ Run.GameState = {
     },
     
     getRandomSpeedY: function(nextMonk) {
-
         var speeds = nextMonk.speedY;
         return speeds[Math.floor(Math.random()*speeds.length)];
     },
