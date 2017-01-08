@@ -89,8 +89,7 @@ Run.GameState = {
         
         //init level
         
-        //player
-        
+        //player  
         switch(this.levelData.player) {
             case "woman":
                 this.stand = this.WOMAN_STAND;
@@ -114,7 +113,7 @@ Run.GameState = {
         this.player.scale.y = 3;
         this.game.physics.arcade.enable(this.player);
         this.player.body.collideWorldBounds = true;
-        this.animate(this.player, [this.walk1, this.walk2, this.walk3], 5);
+        this.animate(this.player, [this.walk1, this.walk2, this.walk3], 6);
         this.player.health = 1;
         this.player.lotus = 0;
         this.player.praying = false;
@@ -157,7 +156,6 @@ Run.GameState = {
     scheduleNextMonk: function() {
         //console.log('scheduleNextMonk is called');
         nextMonk = this.levelData.monks[this.currentMonkIndex];
-        this.monkTimer;
         if(nextMonk) {
             //console.log('player is alive');
             var nextTime = 1000 * (nextMonk.time - (this.currentMonkIndex == 0 ? 0 : this.levelData.monks[this.currentMonkIndex - 1].time));
@@ -174,9 +172,9 @@ Run.GameState = {
     },
     
     getRandomSpeedY: function(nextMonk) {
-         var speeds = nextMonk.speedY;
-         return speeds[Math.floor(Math.random()*speeds.length)];
-     },
+        var speeds = nextMonk.speedY;
+        return speeds[Math.floor(Math.random()*speeds.length)];
+    },
     
     update: function() {
         //this.walkFaster = false;
@@ -194,6 +192,7 @@ Run.GameState = {
         
             if(this.game.input.keyboard.isDown(Phaser.Keyboard.LEFT)) {
                 this.player.body.velocity.x -= this.PLAYER_SPEED;
+                this.animate(this.player, [this.walk1, this.walk2, this.walk3], 10);
             }
             else if(this.game.input.keyboard.isDown(Phaser.Keyboard.RIGHT)) {
                 this.player.body.velocity.x += this.PLAYER_SPEED;
@@ -233,14 +232,14 @@ Run.GameState = {
             this.background.stopScroll();
             this.temples.forEach(function(temple) {
                 temple.body.velocity.y = 0;
-            }, this)
+            }, this);
             this.monks.forEach(function(monk) {
                 monk.body.velocity.y = 0;
                 monk.animations.stop();
-            }, this)
+            }, this);
             this.lotuses.forEach(function(lotus) {
                 lotus.body.velocity.y = 0;
-            }, this)
+            }, this);
             this.game.time.events.remove(this.templeTimer);
             this.game.time.events.remove(this.lotusTimer);
             this.game.time.events.remove(this.monkTimer);
@@ -397,7 +396,7 @@ Run.GameState = {
     },
     
     die: function(player) {
-        console.log('player dies')
+        console.log('player dies');
         /*
         Phaser.Sprite.call(this, this.game, player.body.x, player.body.y, 'dyingPlayer', 0);
         this.anchor.setTo(0.5);
