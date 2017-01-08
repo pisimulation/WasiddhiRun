@@ -5,7 +5,7 @@ var Run = Run || {};
 Run.GameState = {
     
     //init game config
-    init: function(currentLevel, oldHealth, inBonusLevel, bonusNum) {
+    init: function(currentLevel, oldHealth, oldLotus, inBonusLevel, bonusNum) {
         //use all area
         this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
         
@@ -26,22 +26,24 @@ Run.GameState = {
         this.MAN_WALK3 = 38;
         
         this.INIT_HEALTH = oldHealth ? oldHealth : 14;
+        this.INIT_LOTUS = oldLotus ? oldLotus : 0;
         this.TRANSFORM = 15;
         
         this.MAX_BONUS = 1;
         
         //level data
-        //this.levels = ["normal", "femaleMonk", "malePlayer"];
+        this.levels = ["normalLevel", "femaleMonkLevel"];
         this.currentLevel = currentLevel ? currentLevel : "normalLevel";
         console.log('current level: ' + this.currentLevel);
         
         this.bonusNum = bonusNum ? bonusNum : 0;
+        this.inBonusLevel = inBonusLevel ? inBonusLevel : false;
         
         if(inBonusLevel) {
             this.game.time.events.add(Phaser.Timer.SECOND * 5, function() {
                 console.log('TIMEOUT');
                 console.log('IN BONUS bonusNum = ' + this.bonusNum);
-                this.game.state.start('GameState', true, false, "normalLevel", this.player.health, false, this.bonusNum);
+                this.game.state.start('GameState', true, false, "normalLevel", this.player.health, this.player.lotus, false, this.bonusNum);
             }, this);
         }
         
@@ -98,17 +100,22 @@ Run.GameState = {
         
         this.levelData = JSON.parse(this.game.cache.getText(this.currentLevel));
         
-        //this.endOfLevelTimer = this.game.time.events.add(this.levelData.duration * 1000, function() {
-            //var currentLevelIndex = this.levels.indexOf(this.currentLevel);
-            //if(currentLevelIndex < this.levels.length) {
-                //this.currentLevel = this.levels[currentLevelIndex++];
-            //}
-            //else {
-                //end of game
-            //}
+        if(this.bonusNum >= this.MAX_BONUS && !this.inBonusLevel) {
+            console.log('CHANGING LEVEL');
+            this.endOfLevelTimer = this.game.time.events.add(this.levelData.duration * 1000, function() {
+            var currentLevelIndex = this.levels.indexOf(this.currentLevel);
+            if(currentLevelIndex < this.levels.length - 1) {
+                currentLevelIndex++;
+                this.currentLevel = this.levels[currentLevelIndex];
+            }
+            else {
+                console.log('end of game')
+            }
             
-            //this.game.state.start('GameState', true, false, this.currentLevel);
-        //}, this);
+            this.game.state.start('GameState', true, false, this.currentLevel, this.player.health, this.player.lotus, false, this.bonusNum);
+        }, this);
+        }
+        
         
         //init level
         
@@ -143,16 +150,11 @@ Run.GameState = {
     },
     
     scheduleNextMonk: function() {
-        //console.log('scheduleNextMonk is called');
         nextMonk = this.levelData.monks[this.currentMonkIndex];
         if(nextMonk) {
-            //console.log('player is alive');
             var nextTime = 1000 * (nextMonk.time - (this.currentMonkIndex == 0 ? 0 : this.levelData.monks[this.currentMonkIndex - 1].time));
             this.nextMonkTimer = this.game.time.events.add(nextTime, function() {
                 this.monkTimer = this.game.time.events.loop(Phaser.Timer.SECOND * nextMonk.frequency, this.createMonk, this, this.levelData.monkType, this.getRandomSpeedY(nextMonk));
-                //if(!this.player.alive) {
-                  //  this.game.time.events.remove(this.monkTimer);
-                //}
                 this.currentMonkIndex++;
                 this.scheduleNextMonk();
                 
@@ -226,36 +228,16 @@ Run.GameState = {
             this.dieCounter++;
         }
         
-        //becoming a man
-        //this.onShutDownCallback = this.game.state.start('GameState', true, false, "malePlayerLevel", this.player.health);
 
-        if(this.levelData.player == "woman" && this.player.health >= this.TRANSFORM && this.bonusNum < this.MAX_BONUS) {
-            console.log('start sub game state');
-            //Run.game.state.start('SubGameState');
+        if(this.currentLevel == "normalLevel" && this.player.health >= this.TRANSFORM && this.bonusNum < this.MAX_BONUS) {
+            this.flash();
             this.bonusNum++;
             console.log('bonusNum now = ' + this.bonusNum);
-            this.game.state.start('GameState', true, false, "malePlayerLevel", this.player.health, true, this.bonusNum);
-            //CONTINUE HERE WHY IS IT NOT WORKING???
-            //this.game.time.events.add(Phaser.Timer.SECOND * 3, function() {
-                //console.log('TIMEOUT');
-                //this.game.state.start('GameState', true, false, "normalLevel", this.player.health);
-            //}, this);
+            this.game.state.start('GameState', true, false, "malePlayerLevel", this.player.health, this.player.lotus, true, this.bonusNum);
         }
         
-        //returning to a woman
-        //if(this.levelData.player == "man" && this.maleTimeout) {
-          //  this.game.paused = false;
-            //this.maleTimeout = false;
-            //this.game.state.start('GameState', true, false, "normalLevel", this.player.health);
-        //}
-        
     },
-    /*
-    malePlayerTimeout: function(){
-        console.log('malePlayer times up')
-        this.maleTimeout = true;
-    },
-    */
+    
     animate: function(sprite, movingArray, speed) {
         sprite.animations.add('move', movingArray);
         sprite.animations.play('move', speed, true);
@@ -287,7 +269,7 @@ Run.GameState = {
         this.player.body.collideWorldBounds = true;
         this.animate(this.player, [this.walk1, this.walk2, this.walk3], 6);
         this.player.health = this.INIT_HEALTH;
-        this.player.lotus = 0;
+        this.player.lotus = this.INIT_LOTUS;
         this.player.praying = false;
         this.player.alive = true;
         
@@ -423,14 +405,6 @@ Run.GameState = {
     
     die: function(player) {
         console.log('player dies');
-        /*
-        Phaser.Sprite.call(this, this.game, player.body.x, player.body.y, 'dyingPlayer', 0);
-        this.anchor.setTo(0.5);
-        this.scale.x = 3;
-        this.scale.y = 3;
-        this.animate(this, [0, 1, 2, 3, 4, 5, 6, 7, 8]);
-        */
-        
         this.dyingPlayer = this.add.sprite(player.body.x + 50,
                                            player.body.y + 57,
                                            'dyingPlayer',
@@ -440,6 +414,12 @@ Run.GameState = {
         this.dyingPlayer.scale.y = 3;
         this.animate(this.dyingPlayer, [0,1,2,3,4,5,6,7,8], 7);
         
+    },
+    
+    flash: function() {
+        this.game.camera.flash(0xff0000, 10000);
+        this.game.camera.flash(0xff0000, 10000);
+        this.game.camera.flash(0xff0000, 10000);
     }
 };
 

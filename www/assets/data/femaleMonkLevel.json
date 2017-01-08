@@ -9,22 +9,22 @@
         {
             "time": 1,
             "frequency": 1.5,
-            "speedY": 200
+            "speedY": [100,110,150]
         },
         {
             "time": 3,
             "frequency": 1.5,
-            "speedY": 230
+            "speedY": [150,120,160]
         },
         {
             "time": 7,
             "frequency": 1,
-            "speedY": 230   
+            "speedY": [150,200,210]   
         },
         {
             "time": 10,
             "frequency": 0.5,
-            "speedY": 230
+            "speedY": [230,250,100]
         }
     ]
 }
