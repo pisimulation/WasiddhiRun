@@ -1,9 +1,11 @@
 var Run = Run || {};
 
+
+
 Run.GameState = {
     
     //init game config
-    init: function(currentLevel) {
+    init: function(currentLevel, oldHealth, inBonusLevel, bonusNum) {
         //use all area
         this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
         
@@ -23,10 +25,27 @@ Run.GameState = {
         this.MAN_WALK2 = 37;
         this.MAN_WALK3 = 38;
         
+        this.INIT_HEALTH = oldHealth ? oldHealth : 14;
+        this.TRANSFORM = 15;
+        
+        this.MAX_BONUS = 1;
+        
         //level data
-        this.levels = ["normal", "femaleMonk", "malePlayer"];
-        this.currentLevel = currentLevel ? currentLevel : this.levels[0];
+        //this.levels = ["normal", "femaleMonk", "malePlayer"];
+        this.currentLevel = currentLevel ? currentLevel : "normalLevel";
         console.log('current level: ' + this.currentLevel);
+        
+        this.bonusNum = bonusNum ? bonusNum : 0;
+        
+        if(inBonusLevel) {
+            this.game.time.events.add(Phaser.Timer.SECOND * 5, function() {
+                console.log('TIMEOUT');
+                console.log('IN BONUS bonusNum = ' + this.bonusNum);
+                this.game.state.start('GameState', true, false, "normalLevel", this.player.health, false, this.bonusNum);
+            }, this);
+        }
+        
+        
     },
     
     //load assets
@@ -66,78 +85,47 @@ Run.GameState = {
         
         
         
+        
         //levels
         this.loadLevel();
+        
+        this.maleTimeout = false;
+        //this.player.health = this.INIT_HEALTH;
     },
     
     loadLevel: function() {
         this.currentMonkIndex = 0;
         
-        this.levelData = JSON.parse(this.game.cache.getText(this.currentLevel + "Level"));
+        this.levelData = JSON.parse(this.game.cache.getText(this.currentLevel));
         
-        this.endOfLevelTimer = this.game.time.events.add(this.levelData.duration * 1000, function() {
-            var currentLevelIndex = this.levels.indexOf(this.currentLevel);
-            if(currentLevelIndex < this.levels.length) {
-                this.currentLevel = this.levels[currentLevelIndex++];
-            }
-            else {
+        //this.endOfLevelTimer = this.game.time.events.add(this.levelData.duration * 1000, function() {
+            //var currentLevelIndex = this.levels.indexOf(this.currentLevel);
+            //if(currentLevelIndex < this.levels.length) {
+                //this.currentLevel = this.levels[currentLevelIndex++];
+            //}
+            //else {
                 //end of game
-            }
+            //}
             
-            this.game.state.start('GameState', true, false, this.currentLevel);
-        }, this);
+            //this.game.state.start('GameState', true, false, this.currentLevel);
+        //}, this);
         
         //init level
         
         //player
-        switch(this.levelData.player) {
-            case "woman":
-                this.stand = this.WOMAN_STAND;
-                this.walk1 = this.WOMAN_WALK1;
-                this.walk2 = this.WOMAN_WALK2;
-                this.walk3 = this.WOMAN_WALK3;
-                break;
-            case "man":
-                this.stand = this.MAN_STAND;
-                this.walk1 = this.MAN_WALK1;
-                this.walk2 = this.MAN_WALK2;
-                this.walk3 = this.MAN_WALK3;
-                break;         
-        }
-        this.player = this.add.sprite(this.game.world.centerX,
-                                      this.game.world.height - 50,
-                                      'player',
-                                      this.stand);
-        this.player.anchor.setTo(0.5);
-        this.player.scale.x = 3;
-        this.player.scale.y = 3;
-        this.game.physics.arcade.enable(this.player);
-        this.player.body.collideWorldBounds = true;
-        this.animate(this.player, [this.walk1, this.walk2, this.walk3], 6);
-        this.player.health = 1;
-        this.player.lotus = 0;
-        this.player.praying = false;
-        this.player.alive = true;
-        //this.walkFaster = false
-        
+        this.addPlayer(this.levelData.player);
         
         //temple
         this.initTemple();
         this.templeTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.levelData.templeFrequency, this.createTemple, this);
         
-        
-        
         //lotus
         this.initLotus();
         this.lotusTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.levelData.lotusFrequency, this.createLotus, this);
         
-        
-        
         //monk
         this.initMonks();
         this.scheduleNextMonk();
-        
-        
         
         //touchable
         switch (this.levelData.monkType) {
@@ -151,6 +139,7 @@ Run.GameState = {
         
         //counter
         this.dieCounter = 0;
+        this.levelCounter = 0;
     },
     
     scheduleNextMonk: function() {
@@ -192,29 +181,18 @@ Run.GameState = {
         
             if(this.game.input.keyboard.isDown(Phaser.Keyboard.LEFT)) {
                 this.player.body.velocity.x -= this.PLAYER_SPEED;
-                this.animate(this.player, [this.walk1, this.walk2, this.walk3], 10);
             }
             else if(this.game.input.keyboard.isDown(Phaser.Keyboard.RIGHT)) {
                 this.player.body.velocity.x += this.PLAYER_SPEED;
             }
             else if(this.game.input.keyboard.isDown(Phaser.Keyboard.UP)) {
                 this.player.animations.currentAnim.speed = 20
-                //this.walkFaster = true
-                //this.animate(this.player, [this.walk1, this.walk2, this.walk3], 10);
-                //this.player.animations.play();
                 this.player.body.velocity.y -= this.PLAYER_SPEED;
                 
             }
             else if(this.game.input.keyboard.isDown(Phaser.Keyboard.DOWN)) {
                 this.player.body.velocity.y += this.PLAYER_SPEED;
             }
-            
-            /*if(this.walkFaster = true) {
-                this.animate(this.player, [this.walk1, this.walk2, this.walk3], 10);
-            }
-            else {
-                this.animate(this.player, [this.walk1, this.walk2, this.walk3], 6);
-            }*/
         }
         
         //collision
@@ -226,9 +204,7 @@ Run.GameState = {
         this.refreshStats();
         
         //die
-        
         if(!this.player.alive && this.dieCounter == 0) {
-            //this.game.state.paused = true;// = true;
             this.background.stopScroll();
             this.temples.forEach(function(temple) {
                 temple.body.velocity.y = 0;
@@ -246,25 +222,75 @@ Run.GameState = {
             this.game.time.events.remove(this.nextMonkTimer);
             
             this.die(this.player);
-            //this.player.alive = false;
             console.log('restarting game');
             this.dieCounter++;
-            //this.game.lockRender = true;
-            //this.game.time.events.add(Phaser.Timer.SECOND * 2, this.pauseGame, this);
         }
+        
+        //becoming a man
+        //this.onShutDownCallback = this.game.state.start('GameState', true, false, "malePlayerLevel", this.player.health);
+
+        if(this.levelData.player == "woman" && this.player.health >= this.TRANSFORM && this.bonusNum < this.MAX_BONUS) {
+            console.log('start sub game state');
+            //Run.game.state.start('SubGameState');
+            this.bonusNum++;
+            console.log('bonusNum now = ' + this.bonusNum);
+            this.game.state.start('GameState', true, false, "malePlayerLevel", this.player.health, true, this.bonusNum);
+            //CONTINUE HERE WHY IS IT NOT WORKING???
+            //this.game.time.events.add(Phaser.Timer.SECOND * 3, function() {
+                //console.log('TIMEOUT');
+                //this.game.state.start('GameState', true, false, "normalLevel", this.player.health);
+            //}, this);
+        }
+        
+        //returning to a woman
+        //if(this.levelData.player == "man" && this.maleTimeout) {
+          //  this.game.paused = false;
+            //this.maleTimeout = false;
+            //this.game.state.start('GameState', true, false, "normalLevel", this.player.health);
+        //}
         
     },
     /*
-    pauseGame: function() {
-        console.log('paused game');
-        
-        this.game.paused = true;
-        this.die(this.player);
+    malePlayerTimeout: function(){
+        console.log('malePlayer times up')
+        this.maleTimeout = true;
     },
     */
     animate: function(sprite, movingArray, speed) {
         sprite.animations.add('move', movingArray);
         sprite.animations.play('move', speed, true);
+    },
+    
+    addPlayer: function(gender) {
+        switch(gender) {
+            case "woman":
+                this.stand = this.WOMAN_STAND;
+                this.walk1 = this.WOMAN_WALK1;
+                this.walk2 = this.WOMAN_WALK2;
+                this.walk3 = this.WOMAN_WALK3;
+                break;
+            case "man":
+                this.stand = this.MAN_STAND;
+                this.walk1 = this.MAN_WALK1;
+                this.walk2 = this.MAN_WALK2;
+                this.walk3 = this.MAN_WALK3;
+                break;         
+        }
+        this.player = this.add.sprite(this.game.world.centerX,
+                                      this.game.world.height - 50,
+                                      'player',
+                                      this.stand);
+        this.player.anchor.setTo(0.5);
+        this.player.scale.x = 3;
+        this.player.scale.y = 3;
+        this.game.physics.arcade.enable(this.player);
+        this.player.body.collideWorldBounds = true;
+        this.animate(this.player, [this.walk1, this.walk2, this.walk3], 6);
+        this.player.health = this.INIT_HEALTH;
+        this.player.lotus = 0;
+        this.player.praying = false;
+        this.player.alive = true;
+        
     },
     
     initMonks: function() {
@@ -335,7 +361,7 @@ Run.GameState = {
     },
     
     damageOrHeal: function(player, monk) {
-        console.log("touchable?: " + this.touchable);
+        //console.log("touchable?: " + this.touchable);
         var alertMsg = this.touchable ? 'boon': 'hurt';
         if(monk.life) {
             this.touchable ? player.heal(1) : player.damage(1);
@@ -416,3 +442,7 @@ Run.GameState = {
         
     }
 };
+
+
+
+
