@@ -89,7 +89,7 @@ Run.GameState = {
         
         //init level
         
-        //player  
+        //player
         switch(this.levelData.player) {
             case "woman":
                 this.stand = this.WOMAN_STAND;
