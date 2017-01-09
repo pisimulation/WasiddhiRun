@@ -61,6 +61,7 @@ Run.GameState = {
         this.load.image('lotus', 'assets/images/lotus.png');
         this.load.image('boon', 'assets/images/oneboon.png', 32, 32, 3);
         this.load.spritesheet('dyingPlayer', 'assets/images/dyingPlayer.png', 42, 42, 9);
+        this.load.image('gameover', 'assets/images/gameover.png');
         
         //load level data
         this.load.text('normalLevel', 'assets/data/normalLevel.json');
@@ -226,6 +227,7 @@ Run.GameState = {
             this.die(this.player);
             console.log('restarting game');
             this.dieCounter++;
+            this.game.time.events.add(Phaser.Timer.SECOND * 1.2, this.gameOver, this);
         }
         
 
@@ -420,6 +422,18 @@ Run.GameState = {
         this.game.camera.flash(0xff0000, 10000);
         this.game.camera.flash(0xff0000, 10000);
         this.game.camera.flash(0xff0000, 10000);
+    },
+    
+    gameOver: function() {
+        this.game.paused = true;
+        //this.player.destroy();
+        this.gameover = this.add.sprite(this.game.world.centerX, this.game.world.centerY, 'gameover');
+        this.gameover.anchor.setTo(0.5);
+        
+    },
+    
+    gameFinished: function() {
+        this.game.paused = true;
     }
 };
 
