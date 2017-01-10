@@ -50,26 +50,6 @@ Run.GameState = {
         
     },
     
-    //load assets
-    preload: function() {
-        this.load.image('grass', 'assets/images/grass.png');
-        this.load.spritesheet('player', 'assets/images/girl.png', 32, 32, 84);
-        this.load.spritesheet('maleMonk', 'assets/images/maleMonk.png', 32, 32);
-        this.load.spritesheet('femaleMonk', 'assets/images/femaleMonk.png', 32, 32);
-        this.load.image('hurt', 'assets/images/hurt.png');
-        this.load.image('temple', 'assets/images/temple.png');
-        this.load.image('lotus', 'assets/images/lotus.png');
-        this.load.image('boon', 'assets/images/oneboon.png', 32, 32, 3);
-        this.load.spritesheet('dyingPlayer', 'assets/images/dyingPlayer.png', 42, 42, 9);
-        this.load.image('gameover', 'assets/images/gameover.png');
-        
-        //load level data
-        this.load.text('normalLevel', 'assets/data/normalLevel.json');
-        this.load.text('femaleMonkLevel', 'assets/data/femaleMonkLevel.json');
-        this.load.text('malePlayerLevel', 'assets/data/malePlayerLevel.json');
-        
-    },
-    
     create: function() {
         //grass
         this.background = this.add.tileSprite(0,
@@ -232,10 +212,14 @@ Run.GameState = {
         
 
         if(this.currentLevel == "normalLevel" && this.player.health >= this.TRANSFORM && this.bonusNum < this.MAX_BONUS) {
+            //CONTINUE HERE
+            this.boonEmitter = this.game.add.emitter(this.player.body.x, this.player.body.y, 5);
+            this.boonEmitter.makeParticles('boon');
+            this.boonEmitter.setScale(5,7,5,7);
+            this.boonEmitter.start(false, 5000, 20);
             this.flash();
             this.bonusNum++;
-            console.log('bonusNum now = ' + this.bonusNum);
-            this.game.state.start('GameState', true, false, "malePlayerLevel", this.player.health, this.player.lotus, true, this.bonusNum);
+            this.game.time.events.add(Phaser.Timer.SECOND * 2, function() {this.game.state.start('GameState', true, false, "malePlayerLevel", this.player.health, this.player.lotus, true, this.bonusNum)}, this);
         }
         
     },
