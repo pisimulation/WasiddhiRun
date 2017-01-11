@@ -3,8 +3,9 @@ var Run = Run || {};
 Run.PreloadState = {
     //load assets
     preload: function() {
-        this.load.image('wingLobPrah', 'assets/images/wingLobPrah.png');
-        this.load.image('yaiLobPrahNoiJa', 'assets/images/yaiLobPrahNoiJa.png')
+        this.load.spritesheet('wingLobPrah', 'assets/images/wingLobPrah2.png', 899, 358, 2);
+        this.load.spritesheet('yaiLobPrahNoiJa', 'assets/images/yaiLobPrahNoiJa.png', 960, 1280, 4);
+        this.load.image('touchToStart', 'assets/images/touchToStart.png');
         this.load.image('grass', 'assets/images/grass.png');
         this.load.spritesheet('player', 'assets/images/girl.png', 32, 32, 84);
         this.load.spritesheet('maleMonk', 'assets/images/maleMonk.png', 32, 32);
