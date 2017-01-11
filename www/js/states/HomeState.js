@@ -16,15 +16,23 @@ Run.HomeState = {
         this.background.events.onInputDown.add(function() {
             this.game.state.start('GameState');
         }, this);
-        this.logo = this.add.sprite(this.game.world.centerX, this.game.world.centerY - 350, 'wingLobPrah');
+        this.logo = this.add.sprite(this.game.world.centerX, this.game.world.centerY - 210, 'wingLobPrah', 0);
         this.logo.anchor.setTo(0.5);
-        this.logo.scale.x = 0.6;
-        this.logo.scale.y = 0.6;
-        this.yai = this.add.sprite(this.game.world.centerX, this.game.world.centerY + 150, 'yaiLobPrahNoiJa');
-        this.yai.anchor.setTo(0.5);
-        this.yai.scale.x = 0.7;
-        this.yai.scale.y = 0.7;
+        this.logo.scale.x = 0.4;
+        this.logo.scale.y = 0.4;
+        Run.GameState.animate(this.logo, [0,1], 3);
         
-        this.game.add.text(30, this.game.world.height - 50, 'TOUCH TO START');
+        this.yai = this.add.sprite(this.game.world.centerX, this.game.world.centerY + 100, 'yaiLobPrahNoiJa', 0);
+        this.yai.anchor.setTo(0.5);
+        this.yai.scale.x = 0.4;
+        this.yai.scale.y = 0.4;
+        Run.GameState.animate(this.yai, [0,1,2,3], 5);
+        
+        this.touch = this.add.sprite(this.game.world.width - 230, this.game.world.height - 50, 'touchToStart')
+        this.touch.anchor.setTo(0.5);
+        this.touch.scale.x = 0.3;
+        this.touch.scale.y = 0.3;
+        this.touch.scale.y = 0.3;
+        //this.game.add.text(30, this.game.world.height - 50, 'TOUCH TO START');
     }
 };

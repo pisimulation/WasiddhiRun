@@ -14,7 +14,7 @@ Run.GameState = {
         
         //constants
         this.PLAYER_SPEED = 350;
-        this.GRASS_SPEED = 170;
+        this.GRASS_SPEED = 100;
         this.WOMAN_STAND = 43;
         this.WOMAN_WALK1 = 42;
         this.WOMAN_WALK2 = 43;
@@ -101,7 +101,7 @@ Run.GameState = {
         //init level
         
         //player
-        this.addPlayer(this.levelData.player);
+        this.addPlayer(this.levelData.player, this.game.world.centerX, this.game.world.height - 50);
         
         //temple
         this.initTemple();
@@ -114,16 +114,6 @@ Run.GameState = {
         //monk
         this.initMonks();
         this.scheduleNextMonk();
-        
-        //touchable
-        switch (this.levelData.monkType) {
-            case "maleMonk":
-                this.touchable = this.levelData.player == "man" ? true : false;
-                break;
-            case "femaleMonk":
-                this.touchable = this.levelData.player == "woman" ? true : false;
-                break;
-        }
         
         //counter
         this.dieCounter = 0;
@@ -155,7 +145,7 @@ Run.GameState = {
             this.player.body.velocity.x = 0;
             this.player.body.velocity.y = this.GRASS_SPEED;
             
-            this.alert(this.player, 'boon');
+            this.alert(this.player, 'boon', true);
         }
         else{
             //this.player.animations.play();
@@ -211,17 +201,39 @@ Run.GameState = {
         }
         
 
-        if(this.currentLevel == "normalLevel" && this.player.health >= this.TRANSFORM && this.bonusNum < this.MAX_BONUS) {
-            //CONTINUE HERE
+        if(this.currentLevel == "normalLevel" && this.player.health >= this.TRANSFORM && this.bonusNum < this.MAX_BONUS && this.player.gender == "woman") {
+            //this.game.paused = true;
+            console.log(this.player.gender);
             this.boonEmitter = this.game.add.emitter(this.player.body.x, this.player.body.y, 5);
             this.boonEmitter.makeParticles('boon');
             this.boonEmitter.setScale(5,7,5,7);
             this.boonEmitter.start(false, 5000, 20);
-            this.flash();
+            this.player.tint = 0xff0000;
+            //this.game.time.events.add(Phaser.Timer.SECOND * 2, this.flash, this);
             this.bonusNum++;
-            this.game.time.events.add(Phaser.Timer.SECOND * 2, function() {this.game.state.start('GameState', true, false, "malePlayerLevel", this.player.health, this.player.lotus, true, this.bonusNum)}, this);
+            this.game.time.events.add(Phaser.Timer.SECOND * 2,
+                                      function() {
+                                        var x = this.player.body.x;
+                                        var y = this.player.body.y;
+                                        this.player.destroy();
+                                        this.boonEmitter.destroy();
+                                        this.addPlayer("man", x, y);
+                                        //this.currentLevel = "malePlayerLevel";
+                                        //this.player.gender = "man";
+                                        //this.game.state.start('GameState', true, false, "malePlayerLevel", this.player.health, this.player.lotus, true, this.bonusNum)
+                                      },
+                                      this);
         }
         
+        //touchable
+        switch (this.levelData.monkType) {
+            case "maleMonk":
+                this.touchable = this.player.gender == "man" ? true : false;
+                break;
+            case "femaleMonk":
+                this.touchable = this.player.gender == "woman" ? true : false;
+                break;
+        }
     },
     
     animate: function(sprite, movingArray, speed) {
@@ -229,7 +241,7 @@ Run.GameState = {
         sprite.animations.play('move', speed, true);
     },
     
-    addPlayer: function(gender) {
+    addPlayer: function(gender, x, y) {
         switch(gender) {
             case "woman":
                 this.stand = this.WOMAN_STAND;
@@ -244,13 +256,11 @@ Run.GameState = {
                 this.walk3 = this.MAN_WALK3;
                 break;         
         }
-        this.player = this.add.sprite(this.game.world.centerX,
-                                      this.game.world.height - 50,
-                                      'player',
-                                      this.stand);
+        this.player = this.add.sprite(x,y,'player',this.stand);
         this.player.anchor.setTo(0.5);
-        this.player.scale.x = 3;
-        this.player.scale.y = 3;
+        this.player.scale.x = 1.5;
+        this.player.scale.y = 1.5;
+        this.player.gender = gender;
         this.game.physics.arcade.enable(this.player);
         this.player.body.collideWorldBounds = true;
         this.animate(this.player, [this.walk1, this.walk2, this.walk3], 6);
@@ -333,11 +343,11 @@ Run.GameState = {
         var alertMsg = this.touchable ? 'boon': 'hurt';
         if(monk.life) {
             this.touchable ? player.heal(1) : player.damage(1);
-            this.alert(player, alertMsg);
+            this.alert(player, alertMsg, false);
             monk.life = false;
         }
         else {
-            this.alert(player, alertMsg);
+            this.alert(player, alertMsg, false);
             return;
         }
         if(player.health == 0) {
@@ -345,11 +355,19 @@ Run.GameState = {
         }
     },
     
-    alert: function(player, key) {
-        this.hurt = this.add.sprite(player.x, player.top, key);
-        this.hurt.scale.x = 3;
-        this.hurt.scale.y = 3;
-        this.hurt.lifespan = 1.5;
+    alert: function(player, key, toTheLeft) {
+        var x;
+        if(toTheLeft) {
+            x = player.x - 40;
+        }
+        else {
+            x = player.x;
+        }
+        
+        this.msg = this.add.sprite(x, player.top, key);
+        this.msg.scale.x = 1.5;
+        this.msg.scale.y = 1.5;
+        this.msg.lifespan = 1.5;
     },
     
     collectLotus: function(player, lotus) {
@@ -396,8 +414,8 @@ Run.GameState = {
                                            'dyingPlayer',
                                            1);
         this.dyingPlayer.anchor.setTo(0.5);
-        this.dyingPlayer.scale.x = 3;
-        this.dyingPlayer.scale.y = 3;
+        this.dyingPlayer.scale.x = 1.5;
+        this.dyingPlayer.scale.y = 1.5;
         this.animate(this.dyingPlayer, [0,1,2,3,4,5,6,7,8], 7);
         
     },
@@ -412,6 +430,8 @@ Run.GameState = {
         this.game.paused = true;
         //this.player.destroy();
         this.gameover = this.add.sprite(this.game.world.centerX, this.game.world.centerY, 'gameover');
+        this.gameover.scale.x = 0.5;
+        this.gameover.scale.y = 0.5;
         this.gameover.anchor.setTo(0.5);
         
     },

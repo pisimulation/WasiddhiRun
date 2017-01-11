@@ -1,6 +1,6 @@
 var Run = Run || {};
 
-Run.game = new Phaser.Game('100%', '100%', Phaser.AUTO);
+Run.game = new Phaser.Game(400, 600, Phaser.AUTO);
 
 Run.game.state.add('GameState', Run.GameState);
 Run.game.state.add('HomeState', Run.HomeState);
