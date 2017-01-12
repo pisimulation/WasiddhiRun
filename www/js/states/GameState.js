@@ -25,9 +25,11 @@ Run.GameState = {
         this.MAN_WALK2 = 37;
         this.MAN_WALK3 = 38;
         
-        this.INIT_HEALTH = oldHealth ? oldHealth : 14;
+        this.INIT_HEALTH = oldHealth ? oldHealth : 5;
         this.INIT_LOTUS = oldLotus ? oldLotus : 0;
-        this.TRANSFORM = 15;
+        this.TRANSFORM0 = 7;
+        this.TRANSFORM1 = 30;
+        this.TRANSFORM2 = 100;
         
         this.MAX_BONUS = 1;
         
@@ -78,9 +80,9 @@ Run.GameState = {
     
     loadLevel: function() {
         this.currentMonkIndex = 0;
-        
         this.levelData = JSON.parse(this.game.cache.getText(this.currentLevel));
         
+        /*
         if(this.bonusNum >= this.MAX_BONUS && !this.inBonusLevel) {
             console.log('CHANGING LEVEL');
             this.endOfLevelTimer = this.game.time.events.add(this.levelData.duration * 1000, function() {
@@ -94,8 +96,9 @@ Run.GameState = {
             }
             
             this.game.state.start('GameState', true, false, this.currentLevel, this.player.health, this.player.lotus, false, this.bonusNum);
-        }, this);
+            }, this);
         }
+        */
         
         
         //init level
@@ -201,7 +204,12 @@ Run.GameState = {
         }
         
 
-        if(this.currentLevel == "normalLevel" && this.player.health >= this.TRANSFORM && this.bonusNum < this.MAX_BONUS && this.player.gender == "woman") {
+        if(this.currentLevel == "normalLevel" &&
+           (this.player.health >= this.TRANSFORM0 ||
+            this.player.health >= this.TRANSFORM1 ||
+            this.player.health >= this.TRANSFORM2) &&
+           this.bonusNum < this.MAX_BONUS &&
+           this.player.gender == "woman") {
             //this.game.paused = true;
             console.log(this.player.gender);
             this.boonEmitter = this.game.add.emitter(this.player.body.x, this.player.body.y, 5);
@@ -211,18 +219,27 @@ Run.GameState = {
             this.player.tint = 0xff0000;
             //this.game.time.events.add(Phaser.Timer.SECOND * 2, this.flash, this);
             this.bonusNum++;
+            //this.boonEmitter.destroy();
             this.game.time.events.add(Phaser.Timer.SECOND * 2,
                                       function() {
-                                        var x = this.player.body.x;
-                                        var y = this.player.body.y;
-                                        this.player.destroy();
+                                        this.switchPlayerTo("man");
                                         this.boonEmitter.destroy();
-                                        this.addPlayer("man", x, y);
-                                        //this.currentLevel = "malePlayerLevel";
-                                        //this.player.gender = "man";
-                                        //this.game.state.start('GameState', true, false, "malePlayerLevel", this.player.health, this.player.lotus, true, this.bonusNum)
+                                        this.startTimer(10);
+                                        //var timer;
+                                        //this.timer = this.game.time.create(false);
+                                        //  Set a TimerEvent to occur after 2 seconds
+                                        //this.timer.loop(10000, this.switchPlayerTo, this, "woman");
+                                        //  Start the timer running - this is important!
+                                        //  It won't start automatically, allowing you to hook it to button events and the like.
+                                        //this.timer.start();
+                                        //this.game.debug.text('Remaining Time: ' + timer.duration.toFixed(0), this.game.world.centerX, this.game.world.centerY);
                                       },
                                       this);
+            //this.game.time.events.add(Phaser.Timer.SECOND * 10,
+              //                       function() {
+                //                        this.switchPlayerTo("woman");
+                  //                   },
+                    //                 this);
         }
         
         //touchable
@@ -234,6 +251,48 @@ Run.GameState = {
                 this.touchable = this.player.gender == "woman" ? true : false;
                 break;
         }
+        
+        if(this.timer && this.timer.running) {
+            this.game.debug.text('Remaining Time: ' + this.timer.duration.toFixed(0), this.game.world.centerX, this.game.world.centerY);
+        }
+        else {
+            this.game.debug.text('SAY SOMETHING', this.game.world.centerX, this.game.world.centerY);
+        }
+    },
+    /*
+    render: function () {
+        // If our timer is running, show the time in a nicely formatted way, else show 'Done!'
+        if (this.timer.running) {
+            this.game.debug.text('Remaining Time: ' + timer.duration.toFixed(0), this.game.world.centerX,
+            //this.game.debug.text(this.formatTime(Math.round((timerEvent.delay - timer.ms) / 1000)), 2, 14, "#ff0");
+        }
+        else {
+            this.game.debug.text("Done!", 2, 14, "#0f0");
+        }
+    },*/
+    
+    startTimer: function(amount) {
+        this.timer = this.game.time.create(false);
+        //  Set a TimerEvent to occur after 2 seconds
+        this.timer.loop(amount * 1000, this.switchPlayerTo, this, "woman");
+        //  Start the timer running - this is important!
+        //  It won't start automatically, allowing you to hook it to button events and the like.
+        this.timer.start();
+    },
+    
+    stopTimer: function() {
+        //this.timeText.destroy();
+        this.timer.destroy();
+    },
+    
+    switchPlayerTo: function(gender) {
+        if(gender == "woman") {
+            this.stopTimer();
+        }
+        var x = this.player.body.x;
+        var y = this.player.body.y;
+        this.player.destroy();
+        this.addPlayer(gender, x + 30, y + 30);  
     },
     
     animate: function(sprite, movingArray, speed) {
