@@ -31,6 +31,8 @@ Run.GameState = {
         this.TRANSFORM1 = 30;
         this.TRANSFORM2 = 100;
         
+        this.TOBONUSLEVEL = 5;
+        
         this.MAX_BONUS = 1;
         
         //level data
@@ -41,13 +43,7 @@ Run.GameState = {
         this.bonusNum = bonusNum ? bonusNum : 0;
         this.inBonusLevel = inBonusLevel ? inBonusLevel : false;
         
-        if(inBonusLevel) {
-            this.game.time.events.add(Phaser.Timer.SECOND * 5, function() {
-                console.log('TIMEOUT');
-                console.log('IN BONUS bonusNum = ' + this.bonusNum);
-                this.game.state.start('GameState', true, false, "normalLevel", this.player.health, this.player.lotus, false, this.bonusNum);
-            }, this);
-        }
+        
         
         
     },
@@ -76,6 +72,13 @@ Run.GameState = {
         
         this.maleTimeout = false;
         //this.player.health = this.INIT_HEALTH;
+        
+        //counter
+        this.dieCounter = 0;
+        this.levelCounter = 0;
+        this.toBonusLevelCounter = 0;
+        this.toMaleCounter = 0;
+        
     },
     
     loadLevel: function() {
@@ -118,9 +121,8 @@ Run.GameState = {
         this.initMonks();
         this.scheduleNextMonk();
         
-        //counter
-        this.dieCounter = 0;
-        this.levelCounter = 0;
+
+
     },
     
     scheduleNextMonk: function() {
@@ -208,7 +210,8 @@ Run.GameState = {
            (this.player.health >= this.TRANSFORM0 ||
             this.player.health >= this.TRANSFORM1 ||
             this.player.health >= this.TRANSFORM2) &&
-           this.bonusNum < this.MAX_BONUS &&
+           this.toMaleCounter == 0 &&
+           //this.bonusNum < this.MAX_BONUS &&
            this.player.gender == "woman") {
             //this.game.paused = true;
             console.log(this.player.gender);
@@ -218,8 +221,9 @@ Run.GameState = {
             this.boonEmitter.start(false, 5000, 20);
             this.player.tint = 0xff0000;
             //this.game.time.events.add(Phaser.Timer.SECOND * 2, this.flash, this);
-            this.bonusNum++;
+            //this.bonusNum++;
             //this.boonEmitter.destroy();
+            this.toMaleCounter++;
             this.game.time.events.add(Phaser.Timer.SECOND * 2,
                                       function() {
                                         this.switchPlayerTo("man");
@@ -252,11 +256,38 @@ Run.GameState = {
                 break;
         }
         
+        //timer
         if(this.timer && this.timer.running) {
             this.game.debug.text('Remaining Time: ' + this.timer.duration.toFixed(0), this.game.world.centerX, this.game.world.centerY);
+            this.game.debug.text('Time Survived: ' + this.game.time.totalElapsedSeconds(), this.game.world.centerX, this.game.world.centerY - 20);
         }
         else {
-            this.game.debug.text('SAY SOMETHING', this.game.world.centerX, this.game.world.centerY);
+            this.game.debug.text('Time Survived: ' + this.game.time.totalElapsedSeconds(), this.game.world.centerX, this.game.world.centerY);
+        }
+        
+        //transition to femaleMonk bonus level
+        if(this.game.time.totalElapsedSeconds() > this.TOBONUSLEVEL && this.toBonusLevelCounter == 0 && !this.inBonusLevel && this.bonusNum < this.MAX_BONUS) {
+            //this.currentLevel = ;
+            //this.loadLevel();
+            this.toBonusLevelCounter++;
+            console.log(this.toBonusLevelCounter);
+            this.game.state.start('GameState', true, false, "femaleMonkLevel", this.player.health, this.player.lotus, true, this.bonusNum);
+            
+            //this.game.state.remove('GameState');
+        }
+        
+        //transition back from femaleMonk bonus level to normalLevel
+        if(this.inBonusLevel) {
+            this.game.time.events.add(Phaser.Timer.SECOND * 5, function() {
+                console.log('TIMEOUT');
+                console.log('IN BONUS bonusNum = ' + this.bonusNum);
+                this.game.state.start('GameState', true, false, "normalLevel", this.player.health, this.player.lotus, false, this.bonusNum+1);
+            }, this);
+        }
+        
+        //add timer for femaleMonk bonus level
+        if(this.currentLevel == "femaleMonkLevel") {
+            this.startTimer(10);
         }
     },
     /*
