@@ -5,7 +5,7 @@ var Run = Run || {};
 Run.GameState = {
     
     //init game config
-    init: function(currentLevel, oldHealth, oldLotus, inBonusLevel, bonusNum) {
+    init: function(currentLevel, oldHealth, oldLotus, inBonusLevel, bonusNum, transform, toBonus) {
         //use all area
         this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
         
@@ -27,11 +27,11 @@ Run.GameState = {
         
         this.INIT_HEALTH = oldHealth ? oldHealth : 5;
         this.INIT_LOTUS = oldLotus ? oldLotus : 0;
-        this.TRANSFORM0 = 7;
-        this.TRANSFORM1 = 30;
-        this.TRANSFORM2 = 100;
+        this.TRANSFORM = transform ? transform : 7;
+        this.NEXTTRANSFORM = 10;
         
-        this.TOBONUSLEVEL = 5;
+        this.TOBONUS = toBonus ? toBonus : 25;
+        this.BONUSLENGTH = 7;
         
         this.MAX_BONUS = 1;
         
@@ -69,6 +69,8 @@ Run.GameState = {
         
         //levels
         this.loadLevel();
+        this.player.health = this.INIT_HEALTH;
+        this.player.lotus = this.INIT_LOTUS;
         
         this.maleTimeout = false;
         //this.player.health = this.INIT_HEALTH;
@@ -78,6 +80,7 @@ Run.GameState = {
         this.levelCounter = 0;
         this.toBonusLevelCounter = 0;
         this.toMaleCounter = 0;
+        this.femaleMonkTimerCounter = 0;
         
     },
     
@@ -174,12 +177,18 @@ Run.GameState = {
         }
         
         //collision
-        this.game.physics.arcade.overlap(this.player, this.monks, this.damageOrHeal, null, this);
-        this.game.physics.arcade.overlap(this.player, this.lotuses, this.collectLotus, null, this);
-        this.game.physics.arcade.overlap(this.player, this.temples, this.pray, null, this);
+        if(!this.player.invisible && this.player) {
+            this.game.physics.arcade.overlap(this.player, this.monks, this.damageOrHeal, null, this);
+            this.game.physics.arcade.overlap(this.player, this.lotuses, this.collectLotus, null, this);
+            this.game.physics.arcade.overlap(this.player, this.temples, this.pray, null, this);
+        }
+        
     
         //stats
-        this.refreshStats();
+        if(this.player) {
+            this.refreshStats();
+        }
+        
         
         //die
         if(!this.player.alive && this.dieCounter == 0) {
@@ -206,13 +215,15 @@ Run.GameState = {
         }
         
 
+        // transition to male player
         if(this.currentLevel == "normalLevel" &&
-           (this.player.health >= this.TRANSFORM0 ||
-            this.player.health >= this.TRANSFORM1 ||
-            this.player.health >= this.TRANSFORM2) &&
+           this.player.health >= this.TRANSFORM &&
            this.toMaleCounter == 0 &&
            //this.bonusNum < this.MAX_BONUS &&
-           this.player.gender == "woman") {
+           this.player.gender == "woman" &&
+           !this.inBonusLevel) {
+            this.TRANSFORM = this.TRANSFORM + this.NEXTTRANSFORM;
+            console.log("this.TRANSFORM  = " + this.TRANSFORM)
             //this.game.paused = true;
             console.log(this.player.gender);
             this.boonEmitter = this.game.add.emitter(this.player.body.x, this.player.body.y, 5);
@@ -220,6 +231,7 @@ Run.GameState = {
             this.boonEmitter.setScale(5,7,5,7);
             this.boonEmitter.start(false, 5000, 20);
             this.player.tint = 0xff0000;
+            this.player.invisible = true;
             //this.game.time.events.add(Phaser.Timer.SECOND * 2, this.flash, this);
             //this.bonusNum++;
             //this.boonEmitter.destroy();
@@ -228,7 +240,7 @@ Run.GameState = {
                                       function() {
                                         this.switchPlayerTo("man");
                                         this.boonEmitter.destroy();
-                                        this.startTimer(10);
+                                        this.startTimerAndSwitch(10, true);
                                         //var timer;
                                         //this.timer = this.game.time.create(false);
                                         //  Set a TimerEvent to occur after 2 seconds
@@ -266,28 +278,37 @@ Run.GameState = {
         }
         
         //transition to femaleMonk bonus level
-        if(this.game.time.totalElapsedSeconds() > this.TOBONUSLEVEL && this.toBonusLevelCounter == 0 && !this.inBonusLevel && this.bonusNum < this.MAX_BONUS) {
+        if(this.game.time.totalElapsedSeconds() > this.TOBONUS && this.toBonusLevelCounter == 0 && !this.inBonusLevel) {
             //this.currentLevel = ;
             //this.loadLevel();
-            this.toBonusLevelCounter++;
-            console.log(this.toBonusLevelCounter);
-            this.game.state.start('GameState', true, false, "femaleMonkLevel", this.player.health, this.player.lotus, true, this.bonusNum);
-            
+            this.TOBONUS = this.TOBONUS + 20;
+            console.log("NEXT TOBONUS = " + this.TOBONUS);
+            this.toBonusLevelCounter = 1;
+            var oldHealth = this.player.health;
+            var oldLotus = this.player.lotus;
+            console.log("oldHealth = " + oldHealth);
+            console.log("oldLotus = " + oldLotus);
+            this.game.state.start('GameState', true, false, "femaleMonkLevel", this.player.health, this.player.lotus, true, this.bonusNum, this.TRANSFORM, this.TOBONUS);
+            //add timer
+            //this.startTimerAndSwitch(this.BONUSLENGTH, false);
             //this.game.state.remove('GameState');
         }
         
         //transition back from femaleMonk bonus level to normalLevel
-        if(this.inBonusLevel) {
-            this.game.time.events.add(Phaser.Timer.SECOND * 5, function() {
+        if(this.inBonusLevel ) {
+            //this.toBonusLevelCounter++;
+            this.game.time.events.add(Phaser.Timer.SECOND * this.BONUSLENGTH, function() {
                 console.log('TIMEOUT');
                 console.log('IN BONUS bonusNum = ' + this.bonusNum);
-                this.game.state.start('GameState', true, false, "normalLevel", this.player.health, this.player.lotus, false, this.bonusNum+1);
+                this.game.state.start('GameState', true, false, "normalLevel", this.player.health, this.player.lotus, false, this.bonusNum+1, this.TRANSFORM, this.TOBONUS);
             }, this);
+            
         }
         
         //add timer for femaleMonk bonus level
-        if(this.currentLevel == "femaleMonkLevel") {
-            this.startTimer(10);
+        if(this.currentLevel == "femaleMonkLevel" && this.femaleMonkTimerCounter == 0) {
+            this.femaleMonkTimerCounter++;
+            this.startTimerAndSwitch(this.BONUSLENGTH, false);
         }
     },
     /*
@@ -302,13 +323,17 @@ Run.GameState = {
         }
     },*/
     
-    startTimer: function(amount) {
+    startTimerAndSwitch: function(amount, doSwitch) {
         this.timer = this.game.time.create(false);
-        //  Set a TimerEvent to occur after 2 seconds
-        this.timer.loop(amount * 1000, this.switchPlayerTo, this, "woman");
-        //  Start the timer running - this is important!
-        //  It won't start automatically, allowing you to hook it to button events and the like.
-        this.timer.start();
+        if(doSwitch) {
+            this.timer.loop(amount * 1000, this.switchPlayerTo, this, "woman");
+            this.timer.start();
+        }
+        else {
+            this.timer.loop(amount * 1000, this.stopTimer, this);
+            this.timer.start();
+        }
+        
     },
     
     stopTimer: function() {
@@ -317,13 +342,16 @@ Run.GameState = {
     },
     
     switchPlayerTo: function(gender) {
+        console.log("calling switchPlayerTo");
+        console.log("this.player.health = " + this.player.health);
+        console.log("this.player.lotus = " + this.player.lotus);
         if(gender == "woman") {
             this.stopTimer();
         }
         var x = this.player.body.x;
         var y = this.player.body.y;
         this.player.destroy();
-        this.addPlayer(gender, x + 30, y + 30);  
+        this.addPlayer(gender, x + 30, y + 30, this.player.health, this.player.lotus);  
     },
     
     animate: function(sprite, movingArray, speed) {
@@ -331,7 +359,7 @@ Run.GameState = {
         sprite.animations.play('move', speed, true);
     },
     
-    addPlayer: function(gender, x, y) {
+    addPlayer: function(gender, x, y, oldHealth, oldLotus) {
         switch(gender) {
             case "woman":
                 this.stand = this.WOMAN_STAND;
@@ -346,7 +374,7 @@ Run.GameState = {
                 this.walk3 = this.MAN_WALK3;
                 break;         
         }
-        this.player = this.add.sprite(x,y,'player',this.stand);
+        this.player = this.add.sprite(x, y, 'player', this.stand);
         this.player.anchor.setTo(0.5);
         this.player.scale.x = 1.5;
         this.player.scale.y = 1.5;
@@ -354,10 +382,11 @@ Run.GameState = {
         this.game.physics.arcade.enable(this.player);
         this.player.body.collideWorldBounds = true;
         this.animate(this.player, [this.walk1, this.walk2, this.walk3], 6);
-        this.player.health = this.INIT_HEALTH;
-        this.player.lotus = this.INIT_LOTUS;
+        this.player.health = oldHealth ? oldHealth : this.INIT_HEALTH;
+        this.player.lotus = oldLotus ? oldLotus : this.INIT_LOTUS;
         this.player.praying = false;
         this.player.alive = true;
+        this.player.invisible = false;
         
     },
     
@@ -492,9 +521,12 @@ Run.GameState = {
     },
     
     continueRunning: function(player) {
-        player.health += 1;
-        player.praying = false;
-        player.animations.paused = false;
+        if(player && !this.player.invisible) {
+            player.health += 1;
+            player.praying = false;
+            player.animations.paused = false;    
+        }
+        
     },
     
     die: function(player) {
