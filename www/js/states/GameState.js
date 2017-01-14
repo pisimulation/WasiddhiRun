@@ -5,7 +5,7 @@ var Run = Run || {};
 Run.GameState = {
     
     //init game config
-    init: function(currentLevel, oldHealth, oldLotus, inBonusLevel, bonusNum, transform, toBonus) {
+    init: function(currentLevel, oldHealth, oldLotus, inBonusLevel, transform, toBonus, backgroundKey) {
         //use all area
         this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
         
@@ -31,7 +31,7 @@ Run.GameState = {
         this.NEXTTRANSFORM = 10;
         
         this.TOBONUS = toBonus ? toBonus : 25;
-        this.BONUSLENGTH = 7;
+        //this.BONUSLENGTH = 7;
         
         this.MAX_BONUS = 1;
         
@@ -39,9 +39,12 @@ Run.GameState = {
         this.levels = ["normalLevel", "femaleMonkLevel"];
         this.currentLevel = currentLevel ? currentLevel : "normalLevel";
         console.log('current level: ' + this.currentLevel);
+        this.cardLevels = ["maghaPujaLevel", "asalhaLevel", "pilgrimageLevel", "takBatThewoLevel", "visakhaLevel"];
         
-        this.bonusNum = bonusNum ? bonusNum : 0;
+        //this.bonusNum = bonusNum ? bonusNum : 0;
         this.inBonusLevel = inBonusLevel ? inBonusLevel : false;
+        
+        this.backgroundKey = backgroundKey ? backgroundKey : 'grass';
         
         
         
@@ -54,7 +57,7 @@ Run.GameState = {
                                               0,
                                               this.game.world.width,
                                               this.game.world.height,
-                                              'grass');
+                                              this.backgroundKey);
         this.background.autoScroll(0, this.GRASS_SPEED);
         
         //stats
@@ -68,7 +71,14 @@ Run.GameState = {
         
         
         //levels
-        this.loadLevel();
+        if(this.cardLevels.indexOf(this.currentLevel)==-1) {
+        //if(this.cardLevels.includes(this.currentLevel)) {
+            this.loadLevel();
+        }
+        else {
+            this.loadCardLevel();
+            
+        }
         this.player.health = this.INIT_HEALTH;
         this.player.lotus = this.INIT_LOTUS;
         
@@ -121,23 +131,44 @@ Run.GameState = {
         this.lotusTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.levelData.lotusFrequency, this.createLotus, this);
         
         //monk
-        this.initMonks();
-        this.scheduleNextMonk();
+        this.initMonks(); this.scheduleNextMonk(null, 1);
+        
+        //cards
+        this.initCards();
+        this.takBatCardTimer = this.game.time.events.loop(Phaser.Timer.SECOND * 2, this.createTakBatCard, this);
         
 
 
     },
     
-    scheduleNextMonk: function() {
+    scheduleNextMonk: function(x, initPosition) {
+        this.currentMonkIndex = (this.currentLevel == "takBatThewoLevel" ? 0 : this.currentMonkIndex);
+        //this.currentMonkIndex = monkIndex ? monkIndex : this.currentMonkIndex;
+        console.log("currentMonkIndex: " + this.currentMonkIndex);
         nextMonk = this.levelData.monks[this.currentMonkIndex];
         if(nextMonk) {
             var nextTime = 1000 * (nextMonk.time - (this.currentMonkIndex == 0 ? 0 : this.levelData.monks[this.currentMonkIndex - 1].time));
             this.nextMonkTimer = this.game.time.events.add(nextTime, function() {
-                this.monkTimer = this.game.time.events.loop(Phaser.Timer.SECOND * nextMonk.frequency, this.createMonk, this, this.levelData.monkType, this.getRandomSpeedY(nextMonk));
+                this.monkTimer = this.game.time.events.loop(Phaser.Timer.SECOND * nextMonk.frequency, this.createMonk, this, this.levelData.monkType, this.getRandomSpeedY(nextMonk), x, initPosition);
                 this.currentMonkIndex++;
-                this.scheduleNextMonk();
+                this.scheduleNextMonk(x, initPosition);
                 
             }, this);
+        }
+    },
+    
+    loadCardLevel: function() {
+        //level data
+        this.levelData = JSON.parse(this.game.cache.getText(this.currentLevel));
+        //player
+        this.addPlayer(this.levelData.player, this.game.world.centerX, this.game.world.height - 50);
+        if(this.currentLevel == "takBatThewoLevel") {
+            this.currentMonkIndex = 0;
+            this.initMonks();
+            this.scheduleNextMonk(300, 5);
+            //this.currentMonkIndex = 0;
+            this.scheduleNextMonk(100, 8);
+            this.startTimerAndSwitch(this.levelData.duration, false);
         }
     },
     
@@ -145,7 +176,7 @@ Run.GameState = {
         var speeds = nextMonk.speedY;
         return speeds[Math.floor(Math.random()*speeds.length)];
     },
-    
+     
     update: function() {
         //this.walkFaster = false;
         this.player.animations.currentAnim.speed = 6
@@ -181,6 +212,7 @@ Run.GameState = {
             this.game.physics.arcade.overlap(this.player, this.monks, this.damageOrHeal, null, this);
             this.game.physics.arcade.overlap(this.player, this.lotuses, this.collectLotus, null, this);
             this.game.physics.arcade.overlap(this.player, this.temples, this.pray, null, this);
+            this.game.physics.arcade.overlap(this.player, this.takBatCards, this.takBat, null, this)
         }
         
     
@@ -288,19 +320,19 @@ Run.GameState = {
             var oldLotus = this.player.lotus;
             console.log("oldHealth = " + oldHealth);
             console.log("oldLotus = " + oldLotus);
-            this.game.state.start('GameState', true, false, "femaleMonkLevel", this.player.health, this.player.lotus, true, this.bonusNum, this.TRANSFORM, this.TOBONUS);
+            this.game.state.start('GameState', true, false, "femaleMonkLevel", this.player.health, this.player.lotus, true, this.TRANSFORM, this.TOBONUS);
             //add timer
             //this.startTimerAndSwitch(this.BONUSLENGTH, false);
             //this.game.state.remove('GameState');
         }
         
         //transition back from femaleMonk bonus level to normalLevel
-        if(this.inBonusLevel ) {
+        if(this.inBonusLevel) {
             //this.toBonusLevelCounter++;
-            this.game.time.events.add(Phaser.Timer.SECOND * this.BONUSLENGTH, function() {
+            this.game.time.events.add(Phaser.Timer.SECOND * this.levelData.duration, function() {
                 console.log('TIMEOUT');
-                console.log('IN BONUS bonusNum = ' + this.bonusNum);
-                this.game.state.start('GameState', true, false, "normalLevel", this.player.health, this.player.lotus, false, this.bonusNum+1, this.TRANSFORM, this.TOBONUS);
+                //console.log('IN BONUS bonusNum = ' + this.bonusNum);
+                this.game.state.start('GameState', true, false, "normalLevel", this.player.health, this.player.lotus, false, this.TRANSFORM, this.TOBONUS);
             }, this);
             
         }
@@ -308,8 +340,10 @@ Run.GameState = {
         //add timer for femaleMonk bonus level
         if(this.currentLevel == "femaleMonkLevel" && this.femaleMonkTimerCounter == 0) {
             this.femaleMonkTimerCounter++;
-            this.startTimerAndSwitch(this.BONUSLENGTH, false);
+            this.startTimerAndSwitch(this.levelData.duration, false);
         }
+        
+        
     },
     /*
     render: function () {
@@ -395,7 +429,7 @@ Run.GameState = {
         this.monks.enableBody = true;
     },
     
-    createMonk: function(monkType, monkSpeedY) {
+    createMonk: function(monkType, monkSpeedY, x, initPosition) {
         if(!this.player.alive) {
             return;
         }
@@ -403,11 +437,11 @@ Run.GameState = {
         var monk = this.monks.getFirstExists(false);
         
         if(!monk) {
-            monk = new Run.Monk(this.game, this.game.rnd.between(0,this.game.world.width), 0, monkType);
+            monk = new Run.Monk(this.game, (this.currentLevel == "takBatThewoLevel" ? x : this.game.rnd.between(0,this.game.world.width)), 0, monkType, initPosition);
             this.monks.add(monk);
         }
         else {
-            monk.reset(this.game.rnd.between(0,this.game.world.width), 0);
+            monk.reset((this.currentLevel == "takBatThewoLevel" ? x : this.game.rnd.between(0,this.game.world.width)), 0);
         }
         
         monk.life = true;
@@ -455,6 +489,33 @@ Run.GameState = {
         }
         
         lotus.body.velocity.y = this.GRASS_SPEED;
+    },
+    
+    initCards: function() {
+        this.maghaCards = this.add.group();
+        this.maghaCards.enableBody = true;
+        this.takBatCards = this.add.group();
+        this.takBatCards.enableBody = true;
+        this.pilgrimageCards = this.add.group();
+        this.pilgrimageCards.enableBody = true;
+        this.asalhaCards = this.add.group();
+        this.asalhaCards.enableBody = true;
+        this.visakhaCards = this.add.group();
+        this.visakhaCards.enableBody = true;
+    },
+    
+    createTakBatCard: function() {
+        var card = this.takBatCards.getFirstExists(false);
+        
+        if(!card) {
+            card = new Run.Card(this.game, this.game.rnd.between(0,this.game.world.width), 0);
+            this.takBatCards.add(card);
+        }
+        else {
+            card.reset(this.game.rnd.between(0,this.game.world.width), 0);
+        }
+        
+        card.body.velocity.y = this.GRASS_SPEED;
     },
     
     damageOrHeal: function(player, monk) {
@@ -542,11 +603,17 @@ Run.GameState = {
         
     },
     
-    flash: function() {
-        this.game.camera.flash(0xff0000, 10000);
-        this.game.camera.flash(0xff0000, 10000);
-        this.game.camera.flash(0xff0000, 10000);
+    takBat: function() {
+        console.log('takBat is called');
+        this.game.state.start('GameState', true, false, "takBatThewoLevel", this.player.health, this.player.lotus, true, this.TRANSFORM, this.TOBONUS, 'carpet');
+        
     },
+    
+    //flash: function() {
+      //  this.game.camera.flash(0xff0000, 10000);
+        //this.game.camera.flash(0xff0000, 10000);
+        //this.game.camera.flash(0xff0000, 10000);
+    //},
     
     gameOver: function() {
         this.game.paused = true;

@@ -1,0 +1,14 @@
+{
+    "background": "carpet",
+    "duration": 10,
+    "player": "woman",
+    "monkType": "maleMonk",
+    "monks":
+    [
+        {
+            "time": 1,
+            "frequency": 0.5,
+            "speedY": [170]
+        }
+    ]
+}

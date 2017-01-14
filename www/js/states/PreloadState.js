@@ -21,6 +21,14 @@ Run.PreloadState = {
         this.load.text('normalLevel', 'assets/data/normalLevel.json');
         this.load.text('femaleMonkLevel', 'assets/data/femaleMonkLevel.json');
         this.load.text('malePlayerLevel', 'assets/data/malePlayerLevel.json');
+        this.load.text('takBatThewoLevel', 'assets/data/takBatThewoLevel.json');
+        this.load.text('maghaPujaLevel', 'assets/data/maghaPujaLevel.json');
+        this.load.text('asalhaLevel', 'assets/data/asalhaLevel.json');
+        this.load.text('pilgrimageLevel', 'assets/data/pilgrimageLevel.json');
+        this.load.text('visakhaLevel', 'assets/data/visakhaLevel.json');
+        
+        this.load.image('door', 'assets/images/door0.png');
+        this.load.image('carpet', 'assets/images/carpet.png')
         
     },
     
