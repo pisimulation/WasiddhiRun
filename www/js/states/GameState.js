@@ -27,13 +27,19 @@ Run.GameState = {
         
         this.INIT_HEALTH = oldHealth ? oldHealth : 5;
         this.INIT_LOTUS = oldLotus ? oldLotus : 0;
-        this.TRANSFORM = transform ? transform : 7;
-        this.NEXTTRANSFORM = 10;
+        this.TRANSFORM = transform ? transform : 700;
+        this.NEXTTRANSFORM = 1000;
         
-        this.TOBONUS = toBonus ? toBonus : 25;
+        this.TOBONUS = toBonus ? toBonus : 2500;
         //this.BONUSLENGTH = 7;
         
         this.MAX_BONUS = 1;
+        
+        this.TAKBATFREQ = 2;
+        this.MAGHAFREQ = 2;
+        this.ASALHAFREQ = 2;
+        this.PILGRIMAGEFREQ = 2;
+        this.VISAKHAFREQ = 2;
         
         //level data
         this.levels = ["normalLevel", "femaleMonkLevel"];
@@ -135,8 +141,9 @@ Run.GameState = {
         
         //cards
         this.initCards();
-        this.takBatCardTimer = this.game.time.events.loop(Phaser.Timer.SECOND * 2, this.createTakBatCard, this);
-        
+        //this.takBatCardTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.TAKBATFREQ, this.createCard, this, this.takBatCards);
+        this.maghaCardTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.MAGHAFREQ, this.createCard, this, this.maghaCards);
+        this.asalhaCardTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.ASALHAFREQ, this.createCard, this, this.asalhaCards);
 
 
     },
@@ -146,6 +153,7 @@ Run.GameState = {
         //this.currentMonkIndex = monkIndex ? monkIndex : this.currentMonkIndex;
         console.log("currentMonkIndex: " + this.currentMonkIndex);
         nextMonk = this.levelData.monks[this.currentMonkIndex];
+        //this.monkCounter = 0;
         if(nextMonk) {
             var nextTime = 1000 * (nextMonk.time - (this.currentMonkIndex == 0 ? 0 : this.levelData.monks[this.currentMonkIndex - 1].time));
             this.nextMonkTimer = this.game.time.events.add(nextTime, function() {
@@ -169,6 +177,17 @@ Run.GameState = {
             //this.currentMonkIndex = 0;
             this.scheduleNextMonk(100, 8);
             this.startTimerAndSwitch(this.levelData.duration, false);
+        }
+        else if(this.currentLevel == "maghaPujaLevel") {
+            this.currentMonkIndex = 0;
+            this.initMonks();
+            this.monkCounter = 0;
+            this.scheduleNextMonk(null, 1);
+            //this.startTimerAndSwitch(this.levelData.duration, false);
+            
+        }
+        else if(this.currentLevel == "asalhaLevel") {
+            
         }
     },
     
@@ -212,7 +231,9 @@ Run.GameState = {
             this.game.physics.arcade.overlap(this.player, this.monks, this.damageOrHeal, null, this);
             this.game.physics.arcade.overlap(this.player, this.lotuses, this.collectLotus, null, this);
             this.game.physics.arcade.overlap(this.player, this.temples, this.pray, null, this);
-            this.game.physics.arcade.overlap(this.player, this.takBatCards, this.takBat, null, this)
+            this.game.physics.arcade.overlap(this.player, this.takBatCards, this.takBat, null, this);
+            this.game.physics.arcade.overlap(this.player, this.maghaCards, this.magha, null, this);
+            this.game.physics.arcade.overlap(this.player, this.asalhaCards, this.asalha, null, this);
         }
         
     
@@ -302,12 +323,18 @@ Run.GameState = {
         
         //timer
         if(this.timer && this.timer.running) {
-            this.game.debug.text('Remaining Time: ' + this.timer.duration.toFixed(0), this.game.world.centerX, this.game.world.centerY);
-            this.game.debug.text('Time Survived: ' + this.game.time.totalElapsedSeconds(), this.game.world.centerX, this.game.world.centerY - 20);
+            this.game.debug.text('Remaining Time: ' + this.timer.duration.toFixed(0), this.game.world.centerX, this.game.world.centerY - 20);
+            this.game.debug.text('Time Survived: ' + this.game.time.totalElapsedSeconds(), this.game.world.centerX, this.game.world.centerY);
         }
         else {
             this.game.debug.text('Time Survived: ' + this.game.time.totalElapsedSeconds(), this.game.world.centerX, this.game.world.centerY);
         }
+        
+        //monk counter text for maghaPujaLevel
+        if(this.currentLevel == "maghaPujaLevel") {
+            this.game.debug.text('Monk Number: ' + this.monkCounter, this.game.world.centerX, this.game.world.centerY - 40);
+        }
+        
         
         //transition to femaleMonk bonus level
         if(this.game.time.totalElapsedSeconds() > this.TOBONUS && this.toBonusLevelCounter == 0 && !this.inBonusLevel) {
@@ -329,11 +356,16 @@ Run.GameState = {
         //transition back from femaleMonk bonus level to normalLevel
         if(this.inBonusLevel) {
             //this.toBonusLevelCounter++;
-            this.game.time.events.add(Phaser.Timer.SECOND * this.levelData.duration, function() {
-                console.log('TIMEOUT');
-                //console.log('IN BONUS bonusNum = ' + this.bonusNum);
-                this.game.state.start('GameState', true, false, "normalLevel", this.player.health, this.player.lotus, false, this.TRANSFORM, this.TOBONUS);
-            }, this);
+            if(this.currentLevel == "maghaPujaLevel") {
+                this.monkCounter == 13 ? this.game.state.start('GameState', true, false, "normalLevel", this.player.health, this.player.lotus, false, this.TRANSFORM, this.TOBONUS) : null;
+            }
+            else {
+                this.game.time.events.add(Phaser.Timer.SECOND * this.levelData.duration, function() {
+                    console.log('TIMEOUT');
+                    //console.log('IN BONUS bonusNum = ' + this.bonusNum);
+                    this.game.state.start('GameState', true, false, "normalLevel", this.player.health, this.player.lotus, false, this.TRANSFORM, this.TOBONUS);
+                }, this);
+            }
             
         }
         
@@ -345,17 +377,6 @@ Run.GameState = {
         
         
     },
-    /*
-    render: function () {
-        // If our timer is running, show the time in a nicely formatted way, else show 'Done!'
-        if (this.timer.running) {
-            this.game.debug.text('Remaining Time: ' + timer.duration.toFixed(0), this.game.world.centerX,
-            //this.game.debug.text(this.formatTime(Math.round((timerEvent.delay - timer.ms) / 1000)), 2, 14, "#ff0");
-        }
-        else {
-            this.game.debug.text("Done!", 2, 14, "#0f0");
-        }
-    },*/
     
     startTimerAndSwitch: function(amount, doSwitch) {
         this.timer = this.game.time.create(false);
@@ -446,6 +467,10 @@ Run.GameState = {
         
         monk.life = true;
         monk.body.velocity.y = monkSpeedY;
+        if(this.currentLevel == "maghaPujaLevel" && monk.inWorld) {
+            this.monkCounter++;
+            console.log("monk counter = " + this.monkCounter);
+        }
         
     },
     
@@ -504,6 +529,20 @@ Run.GameState = {
         this.visakhaCards.enableBody = true;
     },
     
+    createCard: function(cardGroup) {
+        var card = cardGroup.getFirstExists(false);
+        
+        if(!card) {
+            card = new Run.Card(this.game, this.game.rnd.between(0,this.game.world.width), 0);
+            cardGroup.add(card);
+        }
+        else {
+            card.reset(this.game.rnd.between(0,this.game.world.width), 0);
+        }
+        
+        card.body.velocity.y = this.GRASS_SPEED;        
+    },
+    /*
     createTakBatCard: function() {
         var card = this.takBatCards.getFirstExists(false);
         
@@ -517,7 +556,7 @@ Run.GameState = {
         
         card.body.velocity.y = this.GRASS_SPEED;
     },
-    
+    */
     damageOrHeal: function(player, monk) {
         //console.log("touchable?: " + this.touchable);
         var alertMsg = this.touchable ? 'boon': 'hurt';
@@ -609,11 +648,20 @@ Run.GameState = {
         
     },
     
+    magha: function() {
+        console.log('magha is called');
+        this.game.state.start('GameState', true, false, "maghaPujaLevel", this.player.health, this.player.lotus, true, this.TRANSFORM, this.TOBONUS);
+    },
     //flash: function() {
       //  this.game.camera.flash(0xff0000, 10000);
         //this.game.camera.flash(0xff0000, 10000);
         //this.game.camera.flash(0xff0000, 10000);
     //},
+    
+    asalha: function() {
+        console.log('asalha is called');
+        this.game.state.start('GameState', true, false, "asalhaLevel", this.player.health, this.player.lotus, true, this.TRANSFORM, this.TOBONUS, 'forest');
+    },
     
     gameOver: function() {
         this.game.paused = true;

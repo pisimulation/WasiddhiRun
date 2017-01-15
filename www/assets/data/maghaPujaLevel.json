@@ -1,13 +1,12 @@
 {
+    "duration": 10,
     "player": "woman",
     "monkType": "maleMonk",
-    "templeFrequency": 2,
-    "lotusFrequency": 2,
     "monks":
     [
         {
             "time": 1,
-            "frequency": 2.5,
+            "frequency": 1,
             "speedY": [100,110,150]
         },
         {
