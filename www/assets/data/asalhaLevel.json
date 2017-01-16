@@ -1,27 +1,32 @@
 {
     "duration": 10,
-    "player": "woman",
-    "monkType": "maleMonk",
+    "player": "womanOnDeer",
+    "monkType": "panchawakkhi",
     "monks":
     [
         {
             "time": 1,
-            "frequency": 2.5,
+            "frequency": 2,
             "speedY": [100,110,150]
         },
         {
             "time": 6,
-            "frequency": 1.5,
+            "frequency": 2,
             "speedY": [150,120,160]
         },
         {
             "time": 11,
-            "frequency": 1,
+            "frequency": 2,
             "speedY": [150,200,210]   
         },
         {
             "time": 16,
-            "frequency": 0.2,
+            "frequency": 2,
+            "speedY": [230,250,100]
+        },
+        {
+            "time": 16,
+            "frequency": 2,
             "speedY": [230,250,100]
         }
     ]
