@@ -142,8 +142,10 @@ Run.GameState = {
         //cards
         this.initCards();
         //this.takBatCardTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.TAKBATFREQ, this.createCard, this, this.takBatCards);
-        this.maghaCardTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.MAGHAFREQ, this.createCard, this, this.maghaCards);
-        this.asalhaCardTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.ASALHAFREQ, this.createCard, this, this.asalhaCards);
+        //this.maghaCardTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.MAGHAFREQ, this.createCard, this, this.maghaCards);
+        //this.asalhaCardTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.ASALHAFREQ, this.createCard, this, this.asalhaCards);
+        //this.pilgrimageCardTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.PILGRIMAGEFREQ, this.createCard, this, this.pilgrimageCards);
+        this.visakhaCardTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.VISAKHAFREQ, this.createCard, this, this.visakhaCards);
 
 
     },
@@ -187,6 +189,18 @@ Run.GameState = {
             
         }
         else if(this.currentLevel == "asalhaLevel") {
+            this.currentMonkIndex = 0;
+            this.initMonks();
+            this.scheduleNextMonk(null, 1);
+            this.startTimerAndSwitch(this.levelData.duration, false);
+        }
+        else if(this.currentLevel == "pilgrimageLevel") {
+            this.currentMonkIndex = 0;
+            this.initMonks();
+            this.scheduleNextMonk(200, 1);
+            this.startTimerAndSwitch(this.levelData.duration, false);
+        }
+        else if(this.currentLevel == "visakhaLevel") {
             
         }
     },
@@ -234,6 +248,8 @@ Run.GameState = {
             this.game.physics.arcade.overlap(this.player, this.takBatCards, this.takBat, null, this);
             this.game.physics.arcade.overlap(this.player, this.maghaCards, this.magha, null, this);
             this.game.physics.arcade.overlap(this.player, this.asalhaCards, this.asalha, null, this);
+            this.game.physics.arcade.overlap(this.player, this.pilgrimageCards, this.pilgrimage, null, this);
+            this.game.physics.arcade.overlap(this.player, this.visakhaCards, this.visakha, null, this);
         }
         
     
@@ -316,8 +332,14 @@ Run.GameState = {
             case "maleMonk":
                 this.touchable = this.player.gender == "man" ? true : false;
                 break;
+            case "pilgrimageMonk":
+                this.touchable = this.player.gender == "man" ? true : false;
+                break;
             case "femaleMonk":
                 this.touchable = this.player.gender == "woman" ? true : false;
+                break;
+            case "panchawakkhi":
+                this.touchable = this.player.gender == "womanOnDeer" ? true : false;
                 break;
         }
         
@@ -427,9 +449,20 @@ Run.GameState = {
                 this.walk1 = this.MAN_WALK1;
                 this.walk2 = this.MAN_WALK2;
                 this.walk3 = this.MAN_WALK3;
-                break;         
+                break;
+            case "womanOnDeer":
+                this.stand = 1;
+                this.walk1 = 0;
+                this.walk2 = 1;
+                this.walk3 = 2;
+                break;
         }
-        this.player = this.add.sprite(x, y, 'player', this.stand);
+        if(gender == "womanOnDeer") {
+            this.player = this.add.sprite(x, y, 'womanOnDeer', this.stand);    
+        }
+        else {
+            this.player = this.add.sprite(x, y, 'player', this.stand);    
+        }
         this.player.anchor.setTo(0.5);
         this.player.scale.x = 1.5;
         this.player.scale.y = 1.5;
@@ -458,11 +491,11 @@ Run.GameState = {
         var monk = this.monks.getFirstExists(false);
         
         if(!monk) {
-            monk = new Run.Monk(this.game, (this.currentLevel == "takBatThewoLevel" ? x : this.game.rnd.between(0,this.game.world.width)), 0, monkType, initPosition);
+            monk = new Run.Monk(this.game, (this.currentLevel == "takBatThewoLevel" || "pilgrimageLevel"? x : this.game.rnd.between(0,this.game.world.width)), 0, monkType, initPosition);
             this.monks.add(monk);
         }
         else {
-            monk.reset((this.currentLevel == "takBatThewoLevel" ? x : this.game.rnd.between(0,this.game.world.width)), 0);
+            monk.reset((this.currentLevel == "takBatThewoLevel" || "pilgrimageLevel" ? x : this.game.rnd.between(0,this.game.world.width)), 0);
         }
         
         monk.life = true;
@@ -660,7 +693,17 @@ Run.GameState = {
     
     asalha: function() {
         console.log('asalha is called');
-        this.game.state.start('GameState', true, false, "asalhaLevel", this.player.health, this.player.lotus, true, this.TRANSFORM, this.TOBONUS, 'forest');
+        this.game.state.start('GameState', true, false, "asalhaLevel", this.player.health, this.player.lotus, true, this.TRANSFORM, this.TOBONUS);
+    },
+    
+    visakha: function() {
+        console.log('asalha is called');
+        this.game.state.start('GameState', true, false, "visakhaLevel", this.player.health, this.player.lotus, true, this.TRANSFORM, this.TOBONUS, "bridges");
+    },
+    
+    pilgrimage: function() {
+        console.log('pilgrimage is called');
+        this.game.state.start('GameState', true, false, "pilgrimageLevel", this.player.health, this.player.lotus, true, this.TRANSFORM, this.TOBONUS);
     },
     
     gameOver: function() {

@@ -28,7 +28,11 @@ Run.PreloadState = {
         this.load.text('visakhaLevel', 'assets/data/visakhaLevel.json');
         
         this.load.image('door', 'assets/images/door0.png');
-        this.load.image('carpet', 'assets/images/carpet.png')
+        this.load.image('carpet', 'assets/images/carpet.png');
+        
+        this.load.spritesheet('panchawakkhi', 'assets/images/panchawakkhi.png', 32, 32 ,3);
+        this.load.spritesheet('pilgrimageMonk', 'assets/images/pilgrimageMonk.png', 32, 32 ,3);
+        this.load.spritesheet('womanOnDeer', 'assets/images/womanOnDeer.png', 46, 54 ,3);
         
     },
     
