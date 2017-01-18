@@ -34,6 +34,7 @@ Run.PreloadState = {
         this.load.spritesheet('pilgrimageMonk', 'assets/images/pilgrimageMonk.png', 32, 32 ,3);
         this.load.spritesheet('womanOnDeer', 'assets/images/womanOnDeer.png', 46, 54 ,3);
         
+        this.load.image('bridges', 'assets/images/bridges.png');
     },
     
     create: function() {

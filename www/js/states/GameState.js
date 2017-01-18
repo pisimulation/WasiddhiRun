@@ -172,6 +172,8 @@ Run.GameState = {
         this.levelData = JSON.parse(this.game.cache.getText(this.currentLevel));
         //player
         this.addPlayer(this.levelData.player, this.game.world.centerX, this.game.world.height - 50);
+        
+        
         if(this.currentLevel == "takBatThewoLevel") {
             this.currentMonkIndex = 0;
             this.initMonks();
@@ -201,7 +203,19 @@ Run.GameState = {
             this.startTimerAndSwitch(this.levelData.duration, false);
         }
         else if(this.currentLevel == "visakhaLevel") {
-            
+            console.log('this is visakha');
+            //this.temp();
+            //this.startTimerAndSwitch(this.levelData.duration, false);
+            //temple
+            //this.initTemple();
+            //continue here timer loop not working
+            //this.createTemple();
+            //this.visakhaTempleTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.levelData.templeFrequency, this.createTemple, this);
+
+            //lotus
+            //this.initLotus();
+            //this.createLotus();
+            //this.visakhaLotusTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.levelData.lotusFrequency, this.createLotus, this);
         }
     },
     
@@ -397,6 +411,15 @@ Run.GameState = {
             this.startTimerAndSwitch(this.levelData.duration, false);
         }
         
+        //visakha hell
+        if(this.currentLevel == "visakhaLevel" &&
+           ((this.player.body.x > 0 && this.player.body.x < 39) ||
+            (this.player.body.x > 104 && this.player.body.x < 135) ||
+            (this.player.body.x > 230 && this.player.body.x < 265) ||
+            (this.player.body.x > 0 && this.player.body.x < 39))) {
+            //to hell
+           this.player.alive=false;
+        }
         
     },
     
@@ -484,6 +507,14 @@ Run.GameState = {
     },
     
     createMonk: function(monkType, monkSpeedY, x, initPosition) {
+        var initX;
+        if(this.currentLevel == "takBatThewoLevel" || 
+           this.currentLevel == "pilgrimageLevel"){
+            initX = x;
+        }
+        else {
+            initX = this.game.rnd.between(0,this.game.world.width)
+        }
         if(!this.player.alive) {
             return;
         }
@@ -491,11 +522,11 @@ Run.GameState = {
         var monk = this.monks.getFirstExists(false);
         
         if(!monk) {
-            monk = new Run.Monk(this.game, (this.currentLevel == "takBatThewoLevel" || "pilgrimageLevel"? x : this.game.rnd.between(0,this.game.world.width)), 0, monkType, initPosition);
+            monk = new Run.Monk(this.game, initX, 0, monkType, initPosition);
             this.monks.add(monk);
         }
         else {
-            monk.reset((this.currentLevel == "takBatThewoLevel" || "pilgrimageLevel" ? x : this.game.rnd.between(0,this.game.world.width)), 0);
+            monk.reset(initX, 0);
         }
         
         monk.life = true;
@@ -508,20 +539,34 @@ Run.GameState = {
     },
     
     initTemple: function() {
+        console.log('initTemple is called');
         this.temples = this.add.group();
         this.temples.enableBody = true;
     },
     
     createTemple: function() {
+        console.log('createTemple is called');
         var temple = this.temples.getFirstExists(false);
-        
+        var x1;
+        var x2;
+        if(this.currentLevel == "visakhaLevel") {
+            console.log("creating temple for visakha");
+            x1 = 296;
+            x2 = 360;
+        }
+        else {
+            console.log("CURRENT LEVEL = " + this.currentLevel)
+            console.log('not visakha');
+            x1 = 0;
+            x2 = this.game.world.width;
+        }
         
         if(!temple) {
-            temple = new Run.Temple(this.game, this.game.rnd.between(0,this.game.world.width), 0);
+            temple = new Run.Temple(this.game, this.game.rnd.between(x1,x2), 0);
             this.temples.add(temple);
         }
         else {
-            temple.reset(this.game.rnd.between(0,this.game.world.width), 0);
+            temple.reset(this.game.rnd.between(x1,x2), 0);
             
         }
         
@@ -531,19 +576,32 @@ Run.GameState = {
     },
     
     initLotus: function() {
+        console.log('initLotus is called');
         this.lotuses = this.add.group();
         this.lotuses.enableBody = true;
     },
     
     createLotus: function() {
+        console.log('createLotus is called');
         var lotus = this.lotuses.getFirstExists(false);
-        
+        var x1;
+        var x2;
+        if(this.currentLevel == "visakhaLevel") {
+            console.log("creating lotus for visakha");
+            x1 = 296;
+            x2 = 360;
+        }
+        else {
+            console.log('not visakha');
+            x1 = 0;
+            x2 = this.game.world.width;
+        }
         if(!lotus) {
-            lotus = new Run.Lotus(this.game, this.game.rnd.between(0,this.game.world.width), 0);
+            lotus = new Run.Lotus(this.game, this.game.rnd.between(x1,x2), 0);
             this.lotuses.add(lotus);
         }
         else {
-            lotus.reset(this.game.rnd.between(0,this.game.world.width), 0);
+            lotus.reset(this.game.rnd.between(x1,x2), 0);
         }
         
         lotus.body.velocity.y = this.GRASS_SPEED;
@@ -664,8 +722,8 @@ Run.GameState = {
     
     die: function(player) {
         console.log('player dies');
-        this.dyingPlayer = this.add.sprite(player.body.x + 50,
-                                           player.body.y + 57,
+        this.dyingPlayer = this.add.sprite(player.body.x + 40,
+                                           player.body.y + 40,
                                            'dyingPlayer',
                                            1);
         this.dyingPlayer.anchor.setTo(0.5);
@@ -697,7 +755,7 @@ Run.GameState = {
     },
     
     visakha: function() {
-        console.log('asalha is called');
+        console.log('visakha is called');
         this.game.state.start('GameState', true, false, "visakhaLevel", this.player.health, this.player.lotus, true, this.TRANSFORM, this.TOBONUS, "bridges");
     },
     
