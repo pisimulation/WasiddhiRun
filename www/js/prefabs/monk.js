@@ -8,7 +8,7 @@ Run.Monk = function(game, x, y, key, initPosition) {
     this.checkWorldBounds = true;
     this.outOfBoundsKill = true;
     if(initPosition == 1) {
-        Run.GameState.animate(this, [0, 1, 2], 6);
+        Run.GameState.animate(this, [0, 1, 2], 6, true);
     }
 };
 

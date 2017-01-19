@@ -35,6 +35,8 @@ Run.PreloadState = {
         this.load.spritesheet('womanOnDeer', 'assets/images/womanOnDeer.png', 46, 54 ,3);
         
         this.load.image('bridges', 'assets/images/bridges.png');
+        
+        this.load.spritesheet('levelInformer', 'assets/images/hey.png', 960, 1280, 3);
     },
     
     create: function() {

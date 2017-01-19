@@ -55,6 +55,8 @@ Run.GameState = {
         
         
         
+        
+        
     },
     
     create: function() {
@@ -97,6 +99,8 @@ Run.GameState = {
         this.toBonusLevelCounter = 0;
         this.toMaleCounter = 0;
         this.femaleMonkTimerCounter = 0;
+        this.informCounter = 0;
+        
         
     },
     
@@ -153,7 +157,7 @@ Run.GameState = {
     scheduleNextMonk: function(x, initPosition) {
         this.currentMonkIndex = (this.currentLevel == "takBatThewoLevel" ? 0 : this.currentMonkIndex);
         //this.currentMonkIndex = monkIndex ? monkIndex : this.currentMonkIndex;
-        console.log("currentMonkIndex: " + this.currentMonkIndex);
+        //console.log("currentMonkIndex: " + this.currentMonkIndex);
         nextMonk = this.levelData.monks[this.currentMonkIndex];
         //this.monkCounter = 0;
         if(nextMonk) {
@@ -225,6 +229,29 @@ Run.GameState = {
     },
      
     update: function() {
+        //level informer
+        
+        if(this.currentLevel == "normalLevel" && this.informCounter == 0) {
+            this.index = 0;
+            this.line = '';
+            this.content = [
+                //"hello",
+                //"eiei"
+                "ระวังบุญหกบุญหล่นนะยาย",
+                "บุญหมดโดนธรณีสูบนะ",
+                "เก็บดอกบัวไปถวายวัดต่อบุญได้นะยาย"
+            ];
+            this.levelInformer = this.add.sprite(this.game.world.centerX, this.game.world.centerY, 'levelInformer', 0);
+            this.levelInformer.anchor.setTo(0.5);
+            this.levelInformer.scale.x = 0.4;
+            this.levelInformer.scale.y = 0.4;
+            this.animate(this.levelInformer, [0,1,2], 5, false);
+            this.informCounter++;
+            this.text = this.game.add.text(this.game.world.centerX - 100, this.game.world.centerY - 140, '', { font: "10pt Courier", fill: "#19cb65", stroke: "#119f4e", strokeThickness: 2 });
+
+            this.nextLine();
+        }
+        
         //this.walkFaster = false;
         this.player.animations.currentAnim.speed = 6
         if(this.player.praying) {
@@ -423,6 +450,35 @@ Run.GameState = {
         
     },
     
+    updateLine: function() {
+
+        console.log('updateLine is called');
+        if (this.line.length < this.content[this.index].length)
+        {
+            this.line = this.content[this.index].substr(0, this.line.length + 1);
+            // text.text = line;
+            this.text.setText(this.line);
+        }
+        else
+        {
+            //  Wait 2 seconds then start a new line
+            this.game.time.events.add(Phaser.Timer.SECOND * 2, this.nextLine, this);
+        }
+
+    },
+
+    nextLine: function() {
+        console.log('nextLine is called');
+        this.index++;
+
+        if (this.index < this.content.length)
+        {
+            this.line = '';
+            this.game.time.events.repeat(80, this.content[this.index].length + 1, this.updateLine, this);
+        }
+
+    },
+    
     startTimerAndSwitch: function(amount, doSwitch) {
         this.timer = this.game.time.create(false);
         if(doSwitch) {
@@ -454,9 +510,9 @@ Run.GameState = {
         this.addPlayer(gender, x + 30, y + 30, this.player.health, this.player.lotus);  
     },
     
-    animate: function(sprite, movingArray, speed) {
+    animate: function(sprite, movingArray, speed, repeat) {
         sprite.animations.add('move', movingArray);
-        sprite.animations.play('move', speed, true);
+        sprite.animations.play('move', speed, repeat);
     },
     
     addPlayer: function(gender, x, y, oldHealth, oldLotus) {
@@ -492,7 +548,7 @@ Run.GameState = {
         this.player.gender = gender;
         this.game.physics.arcade.enable(this.player);
         this.player.body.collideWorldBounds = true;
-        this.animate(this.player, [this.walk1, this.walk2, this.walk3], 6);
+        this.animate(this.player, [this.walk1, this.walk2, this.walk3], 6, true);
         this.player.health = oldHealth ? oldHealth : this.INIT_HEALTH;
         this.player.lotus = oldLotus ? oldLotus : this.INIT_LOTUS;
         this.player.praying = false;
@@ -539,24 +595,24 @@ Run.GameState = {
     },
     
     initTemple: function() {
-        console.log('initTemple is called');
+        //console.log('initTemple is called');
         this.temples = this.add.group();
         this.temples.enableBody = true;
     },
     
     createTemple: function() {
-        console.log('createTemple is called');
+        //console.log('createTemple is called');
         var temple = this.temples.getFirstExists(false);
         var x1;
         var x2;
         if(this.currentLevel == "visakhaLevel") {
-            console.log("creating temple for visakha");
+            //console.log("creating temple for visakha");
             x1 = 296;
             x2 = 360;
         }
         else {
-            console.log("CURRENT LEVEL = " + this.currentLevel)
-            console.log('not visakha');
+            //console.log("CURRENT LEVEL = " + this.currentLevel)
+            //console.log('not visakha');
             x1 = 0;
             x2 = this.game.world.width;
         }
@@ -576,13 +632,13 @@ Run.GameState = {
     },
     
     initLotus: function() {
-        console.log('initLotus is called');
+        //console.log('initLotus is called');
         this.lotuses = this.add.group();
         this.lotuses.enableBody = true;
     },
     
     createLotus: function() {
-        console.log('createLotus is called');
+        //console.log('createLotus is called');
         var lotus = this.lotuses.getFirstExists(false);
         var x1;
         var x2;
@@ -592,7 +648,7 @@ Run.GameState = {
             x2 = 360;
         }
         else {
-            console.log('not visakha');
+            //console.log('not visakha');
             x1 = 0;
             x2 = this.game.world.width;
         }
@@ -729,7 +785,7 @@ Run.GameState = {
         this.dyingPlayer.anchor.setTo(0.5);
         this.dyingPlayer.scale.x = 1.5;
         this.dyingPlayer.scale.y = 1.5;
-        this.animate(this.dyingPlayer, [0,1,2,3,4,5,6,7,8], 7);
+        this.animate(this.dyingPlayer, [0,1,2,3,4,5,6,7,8], 7, false);
         
     },
     
