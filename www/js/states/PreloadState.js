@@ -37,6 +37,7 @@ Run.PreloadState = {
         this.load.image('bridges', 'assets/images/bridges.png');
         
         this.load.spritesheet('levelInformer', 'assets/images/hey.png', 960, 1280, 3);
+        this.load.image('bubble', 'assets/images/bubble.png');
     },
     
     create: function() {

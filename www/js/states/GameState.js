@@ -27,8 +27,8 @@ Run.GameState = {
         
         this.INIT_HEALTH = oldHealth ? oldHealth : 5;
         this.INIT_LOTUS = oldLotus ? oldLotus : 0;
-        this.TRANSFORM = transform ? transform : 700;
-        this.NEXTTRANSFORM = 1000;
+        this.TRANSFORM = transform ? transform : 7;
+        this.NEXTTRANSFORM = 23;
         
         this.TOBONUS = toBonus ? toBonus : 2500;
         //this.BONUSLENGTH = 7;
@@ -74,7 +74,8 @@ Run.GameState = {
         this.game.add.text(10, 50, 'Boon Points:', style);
         this.lotusNumText = this.game.add.text(80, 20, '', style);
         this.pointText = this.game.add.text(130, 50, '', style);
-        
+        this.score = this.game.add.text(this.game.world.centerX, this.game.world.bottom - 40, '', { font: "10pt Courier", fill: "#19cb65", stroke: "#119f4e", strokeThickness: 2 });
+        this.timeout = this.game.add.text(this.game.world.centerX, this.game.world.bottom - 50, '', { font: "10pt Courier", fill: "#19cb65", stroke: "#119f4e", strokeThickness: 2 });
         
         
         
@@ -149,7 +150,7 @@ Run.GameState = {
         //this.maghaCardTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.MAGHAFREQ, this.createCard, this, this.maghaCards);
         //this.asalhaCardTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.ASALHAFREQ, this.createCard, this, this.asalhaCards);
         //this.pilgrimageCardTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.PILGRIMAGEFREQ, this.createCard, this, this.pilgrimageCards);
-        this.visakhaCardTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.VISAKHAFREQ, this.createCard, this, this.visakhaCards);
+        ////this.visakhaCardTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.VISAKHAFREQ, this.createCard, this, this.visakhaCards);
 
 
     },
@@ -231,27 +232,35 @@ Run.GameState = {
     update: function() {
         //level informer
         
-        if(this.currentLevel == "normalLevel" && this.informCounter == 0) {
-            this.index = 0;
-            this.line = '';
-            this.content = [
-                //"hello",
-                //"eiei"
-                "ระวังบุญหกบุญหล่นนะยาย",
-                "บุญหมดโดนธรณีสูบนะ",
-                "เก็บดอกบัวไปถวายวัดต่อบุญได้นะยาย"
-            ];
-            this.levelInformer = this.add.sprite(this.game.world.centerX, this.game.world.centerY, 'levelInformer', 0);
-            this.levelInformer.anchor.setTo(0.5);
-            this.levelInformer.scale.x = 0.4;
-            this.levelInformer.scale.y = 0.4;
-            this.animate(this.levelInformer, [0,1,2], 5, false);
-            this.informCounter++;
-            this.text = this.game.add.text(this.game.world.centerX - 100, this.game.world.centerY - 140, '', { font: "10pt Courier", fill: "#19cb65", stroke: "#119f4e", strokeThickness: 2 });
-
-            this.nextLine();
+        if(this.informCounter == 0) {
+            if(this.currentLevel == "normalLevel" &&  this.player.gender == "man") {
+                this.content = [
+                    " ",
+                    "ท่านสั่งสมบุญมากพอแล้ว",
+                    "ท่านได้เกิดเป็นเพศบริสุทธิ์10วินาที",
+                    "รีบhigh5พระเก็บบุญเร็ว!",
+                    " "
+                ];
+            }
+            else if(this.currentLevel == "normalLevel" && this.player.gender == "woman") {
+                this.content = [
+                    " ",
+                    "ระวังบุญหกบุญหล่นนะยาย",
+                    "บุญหมดโดนธรณีสูบนะ",
+                    "เก็บดอกบัวไปถวายวัดต่อบุญได้นะยาย",
+                    " "
+                ];
+                
+            }
+            this.addInformer();
         }
-        
+        /*
+        if(!this.bubble) {
+            console.log("no bubble");
+            this.text.destroy();
+            this.animate(this.levelInformer, [2,1,0],5,false);
+        }
+        */
         //this.walkFaster = false;
         this.player.animations.currentAnim.speed = 6
         if(this.player.praying) {
@@ -332,6 +341,7 @@ Run.GameState = {
            //this.bonusNum < this.MAX_BONUS &&
            this.player.gender == "woman" &&
            !this.inBonusLevel) {
+            
             this.TRANSFORM = this.TRANSFORM + this.NEXTTRANSFORM;
             console.log("this.TRANSFORM  = " + this.TRANSFORM)
             //this.game.paused = true;
@@ -348,6 +358,7 @@ Run.GameState = {
             this.toMaleCounter++;
             this.game.time.events.add(Phaser.Timer.SECOND * 2,
                                       function() {
+                                        this.informCounter = 0;
                                         this.switchPlayerTo("man");
                                         this.boonEmitter.destroy();
                                         this.startTimerAndSwitch(10, true);
@@ -386,16 +397,20 @@ Run.GameState = {
         
         //timer
         if(this.timer && this.timer.running) {
-            this.game.debug.text('Remaining Time: ' + this.timer.duration.toFixed(0), this.game.world.centerX, this.game.world.centerY - 20);
-            this.game.debug.text('Time Survived: ' + this.game.time.totalElapsedSeconds(), this.game.world.centerX, this.game.world.centerY);
+            this.timeout.setText('Remaining Time: ' + this.timer.duration.toFixed(0));
+            //this.game.debug.text('Remaining Time: ' + this.timer.duration.toFixed(0), this.game.world.centerX, this.game.world.centerY - 20);
+            this.score.setText('Time Survived: ' + this.game.time.totalElapsedSeconds(), this.game.world.centerX, this.game.world.centerY);
+            //this.game.debug.text('Time Survived: ' + this.game.time.totalElapsedSeconds(), this.game.world.centerX, this.game.world.centerY);
         }
         else {
-            this.game.debug.text('Time Survived: ' + this.game.time.totalElapsedSeconds(), this.game.world.centerX, this.game.world.centerY);
+            this.score.setText('Time Survived: ' + this.game.time.totalElapsedSeconds(), this.game.world.centerX, this.game.world.centerY);
+            //this.game.debug.text('Time Survived: ' + this.game.time.totalElapsedSeconds(), this.game.world.centerX, this.game.world.centerY);
         }
         
         //monk counter text for maghaPujaLevel
         if(this.currentLevel == "maghaPujaLevel") {
-            this.game.debug.text('Monk Number: ' + this.monkCounter, this.game.world.centerX, this.game.world.centerY - 40);
+            this.timeout.setText('Monk Number: ' + this.monkCounter);
+            //this.game.debug.text('Monk Number: ' + this.monkCounter, this.game.world.centerX, this.game.world.centerY - 40);
         }
         
         
@@ -476,7 +491,36 @@ Run.GameState = {
             this.line = '';
             this.game.time.events.repeat(80, this.content[this.index].length + 1, this.updateLine, this);
         }
+        else {
+            this.bubble.destroy();
+            this.text.destroy();
+            this.animate(this.levelInformer, [2,1,0],5,false);
+            this.levelInformer.destroy();
+        }
 
+    },
+    
+    addInformer: function() {
+        this.index = 0;
+        this.line = '';
+        this.levelInformer = this.add.sprite(this.game.world.centerX, this.game.world.centerY, 'levelInformer', 0);
+        this.levelInformer.anchor.setTo(0.5);
+        this.levelInformer.scale.x = 0.4;
+        this.levelInformer.scale.y = 0.4;
+        this.animate(this.levelInformer, [0,1,2], 5, false);
+        this.informCounter++;
+
+        //bubble
+        this.bubble = this.add.sprite(this.game.world.centerX + 25, this.game.world.centerY - 130, 'bubble');
+        this.bubble.anchor.setTo(0.5);
+        this.bubble.scale.x = 1;
+        this.bubble.scale.y = 0.4;
+        this.bubble.alpha = 0.5;
+
+        //text
+        this.text = this.game.add.text(this.game.world.centerX - 100, this.game.world.centerY - 140, '', { font: "16pt Courier", fill: "#19cb65", stroke: "#119f4e", strokeThickness: 2 });
+
+        this.nextLine();
     },
     
     startTimerAndSwitch: function(amount, doSwitch) {
@@ -495,18 +539,20 @@ Run.GameState = {
     stopTimer: function() {
         //this.timeText.destroy();
         this.timer.destroy();
+        this.timeout.destroy();
     },
     
     switchPlayerTo: function(gender) {
-        console.log("calling switchPlayerTo");
-        console.log("this.player.health = " + this.player.health);
-        console.log("this.player.lotus = " + this.player.lotus);
+        //console.log("calling switchPlayerTo");
+        //console.log("this.player.health = " + this.player.health);
+        //console.log("this.player.lotus = " + this.player.lotus);
         if(gender == "woman") {
             this.stopTimer();
         }
         var x = this.player.body.x;
         var y = this.player.body.y;
         this.player.destroy();
+        //this.timeout.destroy();
         this.addPlayer(gender, x + 30, y + 30, this.player.health, this.player.lotus);  
     },
     
