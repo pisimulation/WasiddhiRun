@@ -8,22 +8,22 @@
         {
             "time": 1,
             "frequency": 2.5,
-            "speedY": [100,110,150]
+            "speedY": [110,120,150]
         },
         {
             "time": 6,
-            "frequency": 1.5,
-            "speedY": [150,120,160]
+            "frequency": 2.2,
+            "speedY": [150,120,140]
         },
         {
             "time": 11,
-            "frequency": 1,
-            "speedY": [150,200,210]   
+            "frequency": 2,
+            "speedY": [150,180,200]   
         },
         {
             "time": 16,
-            "frequency": 0.2,
-            "speedY": [230,250,100]
+            "frequency": 1.5,
+            "speedY": [200,120,150]
         }
     ]
 }
