@@ -20,7 +20,7 @@ Run.HomeState = {
         this.logo.anchor.setTo(0.5);
         this.logo.scale.x = 0.4;
         this.logo.scale.y = 0.4;
-        Run.GameState.animate(this.logo, [0,1], 3);
+        Run.GameState.animate(this.logo, [0,1], 3, true);
         
         this.yai = this.add.sprite(this.game.world.centerX, this.game.world.centerY + 100, 'yaiLobPrahNoiJa', 0);
         this.yai.anchor.setTo(0.5);

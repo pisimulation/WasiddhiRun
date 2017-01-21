@@ -28,6 +28,7 @@ Run.PreloadState = {
         this.load.text('visakhaLevel', 'assets/data/visakhaLevel.json');
         
         this.load.image('door', 'assets/images/door0.png');
+        this.load.spritesheet('card', 'assets/images/card.png', 32, 32, 3);
         this.load.image('carpet', 'assets/images/carpet.png');
         
         this.load.spritesheet('panchawakkhi', 'assets/images/panchawakkhi.png', 32, 32 ,3);
@@ -38,6 +39,7 @@ Run.PreloadState = {
         
         this.load.spritesheet('levelInformer', 'assets/images/hey.png', 960, 1280, 3);
         this.load.image('bubble', 'assets/images/bubble.png');
+        this.load.image('scroll', 'assets/images/scroll.png')
     },
     
     create: function() {
