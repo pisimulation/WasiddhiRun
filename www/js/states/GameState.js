@@ -5,7 +5,7 @@ var Run = Run || {};
 Run.GameState = {
     
     //init game config
-    init: function(currentLevel, oldHealth, oldLotus, inBonusLevel, transform, toBonus, backgroundKey) {
+    init: function(currentLevel, oldHealth, oldLotus, inBonusLevel, transform, toBonus, backgroundKey, oldTime) {
         //use all area
         this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
         
@@ -55,15 +55,16 @@ Run.GameState = {
         
         this.backgroundKey = backgroundKey ? backgroundKey : 'grass';
         
+        this.oldTime = oldTime ? oldTime : 0;
         
-        
-        
+        console.log('oldTime = ' + this.oldTime);
         
         
     },
     
     create: function() {
-        //this.game.input.onDown.add(this.unpause, this);
+        
+                                                    
         //grass
         this.background = this.add.tileSprite(0,
                                               0,
@@ -79,7 +80,7 @@ Run.GameState = {
         this.lotusNumText = this.game.add.text(80, 20, '', style);
         this.pointText = this.game.add.text(90, 50, '', style);
         this.score = this.game.add.text(this.game.world.centerX, this.game.world.bottom - 40, '', { font: "10pt Courier", fill: "#19cb65", stroke: "#119f4e", strokeThickness: 2 });
-        this.timeout = this.game.add.text(this.game.world.centerX, this.game.world.bottom - 50, '', { font: "10pt Courier", fill: "#19cb65", stroke: "#119f4e", strokeThickness: 2 });
+        //this.timeout = this.game.add.text(this.game.world.centerX, this.game.world.bottom - 50, '', { font: "10pt Courier", fill: "#19cb65", stroke: "#119f4e", strokeThickness: 2 });
         
         
         
@@ -111,29 +112,24 @@ Run.GameState = {
         
         this.game.time.events.loop(10000,  this.randomizeSpace, this);
         
+        //timer
+        this.startTime = new Date();
+        this.totalTime = 120;
+        this.timeElapsed = 0;
+
+        this.createStopwatch();
+
+        this.gameStopwatch = this.game.time.events.loop(100, this.updateStopwatch, this);
+        
+        if(this.timeoutLabel) {
+            this.gameTimer = this.game.time.events.loop(100, this.updateTimer, this, this.levelData.duration);
+        }
+        
     },
     
     loadLevel: function() {
         this.currentMonkIndex = 0;
         this.levelData = JSON.parse(this.game.cache.getText(this.currentLevel));
-        
-        /*
-        if(this.bonusNum >= this.MAX_BONUS && !this.inBonusLevel) {
-            console.log('CHANGING LEVEL');
-            this.endOfLevelTimer = this.game.time.events.add(this.levelData.duration * 1000, function() {
-            var currentLevelIndex = this.levels.indexOf(this.currentLevel);
-            if(currentLevelIndex < this.levels.length - 1) {
-                currentLevelIndex++;
-                this.currentLevel = this.levels[currentLevelIndex];
-            }
-            else {
-                console.log('end of game')
-            }
-            
-            this.game.state.start('GameState', true, false, this.currentLevel, this.player.health, this.player.lotus, false, this.bonusNum);
-            }, this);
-        }
-        */
         
         
         //init level
@@ -200,13 +196,15 @@ Run.GameState = {
             this.scheduleNextMonk(300, 3);
             //this.currentMonkIndex = 0;
             this.scheduleNextMonk(100, 6);
-            this.startTimerAndSwitch(this.levelData.duration, false);
+            this.createTimer(this.levelData.duration);
+            //this.startTimerAndSwitch(this.levelData.duration, false);
         }
         else if(this.currentLevel == "maghaPujaLevel") {
             this.currentMonkIndex = 0;
             this.initMonks();
             this.monkCounter = 0;
             this.scheduleNextMonk(null, 1);
+            
             //this.startTimerAndSwitch(this.levelData.duration, false);
             
         }
@@ -214,13 +212,15 @@ Run.GameState = {
             this.currentMonkIndex = 0;
             this.initMonks();
             this.scheduleNextMonk(null, 1);
-            this.startTimerAndSwitch(this.levelData.duration, false);
+            this.createTimer(this.levelData.duration);
+            //this.startTimerAndSwitch(this.levelData.duration, false);
         }
         else if(this.currentLevel == "pilgrimageLevel") {
             this.currentMonkIndex = 0;
             this.initMonks();
             this.scheduleNextMonk(200, 1);
-            this.startTimerAndSwitch(this.levelData.duration, false);
+            this.createTimer(this.levelData.duration);
+            //this.startTimerAndSwitch(this.levelData.duration, false);
         }
         else if(this.currentLevel == "visakhaLevel") {
             console.log('this is visakha');
@@ -393,8 +393,7 @@ Run.GameState = {
            !this.inBonusLevel) {
             
             this.TRANSFORM = this.TRANSFORM + this.NEXTTRANSFORM;
-            console.log("this.TRANSFORM  = " + this.TRANSFORM)
-            //this.game.paused = true;
+            console.log("this.TRANSFORM  = " + this.TRANSFORM);
             console.log(this.player.gender);
             this.boonEmitter = this.game.add.emitter(this.player.body.x, this.player.body.y, 5);
             this.boonEmitter.makeParticles('boon');
@@ -402,32 +401,15 @@ Run.GameState = {
             this.boonEmitter.start(false, 5000, 20);
             this.player.tint = 0xff0000;
             this.player.invisible = true;
-            //this.game.time.events.add(Phaser.Timer.SECOND * 2, this.flash, this);
-            //this.bonusNum++;
-            //this.boonEmitter.destroy();
             this.toMaleCounter++;
             this.game.time.events.add(Phaser.Timer.SECOND * 2,
                                       function() {
                                         this.informCounter = 0;
                                         this.switchPlayerTo("man");
-                                        //this.lineTimer.destroy();
                                         this.boonEmitter.destroy();
                                         this.startTimerAndSwitch(10, true);
-                                        //var timer;
-                                        //this.timer = this.game.time.create(false);
-                                        //  Set a TimerEvent to occur after 2 seconds
-                                        //this.timer.loop(10000, this.switchPlayerTo, this, "woman");
-                                        //  Start the timer running - this is important!
-                                        //  It won't start automatically, allowing you to hook it to button events and the like.
-                                        //this.timer.start();
-                                        //this.game.debug.text('Remaining Time: ' + timer.duration.toFixed(0), this.game.world.centerX, this.game.world.centerY);
                                       },
                                       this);
-            //this.game.time.events.add(Phaser.Timer.SECOND * 10,
-              //                       function() {
-                //                        this.switchPlayerTo("woman");
-                  //                   },
-                    //                 this);
         }
         
         
@@ -448,17 +430,19 @@ Run.GameState = {
         }
         
         //timer
+        /*
         if(this.timer && this.timer.running) {
             this.timeout.setText('Remaining Time: ' + this.timer.duration.toFixed(0));
             //this.game.debug.text('Remaining Time: ' + this.timer.duration.toFixed(0), this.game.world.centerX, this.game.world.centerY - 20);
-            this.score.setText('Time Survived: ' + this.game.time.totalElapsedSeconds(), this.game.world.centerX, this.game.world.centerY);
+            //this.score.setText('Time Survived: ' + this.game.time.totalElapsedSeconds(), this.game.world.centerX, this.game.world.centerY);
             //this.game.debug.text('Time Survived: ' + this.game.time.totalElapsedSeconds(), this.game.world.centerX, this.game.world.centerY);
         }
         else {
-            this.score.setText('Time Survived: ' + this.game.time.totalElapsedSeconds(), this.game.world.centerX, this.game.world.centerY);
+            //this.score.setText('Time Survived: ' + this.game.time.totalElapsedSeconds(), this.game.world.centerX, this.game.world.centerY);
             //this.game.debug.text('Time Survived: ' + this.game.time.totalElapsedSeconds(), this.game.world.centerX, this.game.world.centerY);
         }
-        
+        */
+        //CONTINUE HOW TO TRANSITION BACK FROM MAGHA???
         //monk counter text for maghaPujaLevel
         if(this.currentLevel == "maghaPujaLevel") {
             this.timeout.setText('Monk Number: ' + this.monkCounter);
@@ -481,6 +465,9 @@ Run.GameState = {
            this.player.alive=false;
         }
         
+        if(this.timeElapsed >= this.levelData.duration){
+            this.game.state.start('GameState', true, false, "normalLevel", this.player.health, this.player.lotus, false, this.TRANSFORM, this.TOBONUS, null, this.timeSurvived)
+        }
     },
     
     updateLine: function() {
@@ -859,7 +846,7 @@ Run.GameState = {
         this.player.invisible = true;
         this.game.paused = true;
         this.addScroll("วันตักบาตรเทโว\nภิกษุสงฆ์มาประชุมกัน\nโดยมิได้นัดหมาย", "หลบพระบิณฑบาต");
-        this.game.state.start('GameState', true, false, "takBatThewoLevel", this.player.health, this.player.lotus, true, this.TRANSFORM, this.TOBONUS, 'carpet');
+        this.game.state.start('GameState', true, false, "takBatThewoLevel", this.player.health, this.player.lotus, true, this.TRANSFORM, this.TOBONUS, 'carpet', this.timeSurvived);
         
     },
     
@@ -872,7 +859,7 @@ Run.GameState = {
                                   //function() {
             //this.game.paused = false;
             //console.log('magha is called');
-        this.game.state.start('GameState', true, false, "maghaPujaLevel", this.player.health, this.player.lotus, true, this.TRANSFORM, this.TOBONUS);
+        this.game.state.start('GameState', true, false, "maghaPujaLevel", this.player.health, this.player.lotus, true, this.TRANSFORM, this.TOBONUS, null, this.timeSurvived);
         //}, this);
         //console.log('desciption');
     },
@@ -887,13 +874,13 @@ Run.GameState = {
         this.player.invisible = true;
         this.game.paused = true;
         this.addScroll("วันอาสาฬหบูชา\nพระพุทธเจ้าทรงแสดง\nธัมมจักกัปปวัตตนสูตร", "ขี่กวาง high5 ปัญจวัคคีย์\nทั้งห้าผู้มาฟังปฐมเทศนา");
-        this.game.state.start('GameState', true, false, "asalhaLevel", this.player.health, this.player.lotus, true, this.TRANSFORM, this.TOBONUS);
+        this.game.state.start('GameState', true, false, "asalhaLevel", this.player.health, this.player.lotus, true, this.TRANSFORM, this.TOBONUS, null, this.timeSurvived);
     },
     
     visakha: function() {
         this.game.time.events.add(Phaser.Timer.SECOND * 3,
                                   function() {
-            this.game.state.start('GameState', true, false, "visakhaLevel", this.player.health, this.player.lotus, true, this.TRANSFORM, this.TOBONUS, "bridges");
+            this.game.state.start('GameState', true, false, "visakhaLevel", this.player.health, this.player.lotus, true, this.TRANSFORM, this.TOBONUS, "bridges", this.timeSurvived);
         }, this);
         
     },
@@ -903,7 +890,7 @@ Run.GameState = {
         this.game.paused = true;
         this.addScroll("พระธุดงค์", "ยายหลบพระธุดงค์หน่อยจ้า");
         console.log('pilgrimage is called');
-        this.game.state.start('GameState', true, false, "pilgrimageLevel", this.player.health, this.player.lotus, true, this.TRANSFORM, this.TOBONUS);
+        this.game.state.start('GameState', true, false, "pilgrimageLevel", this.player.health, this.player.lotus, true, this.TRANSFORM, this.TOBONUS, null, this.timeSurvived);
     },
     
     randomizeSpace: function() {
@@ -942,8 +929,80 @@ Run.GameState = {
         this.game.paused = false;
     },
     
+    createStopwatch: function(){
+        console.log('creating timer');
+        var initTime = "";
+        this.game.add.text(275, 530, "Time survived", {font: "18px Arial", fill: "#fff"}); 
+        this.timeLabel = 
+        this.game.add.text(350, 550, initTime, {font: "30px Arial", fill: "#fff"}); 
+        this.timeLabel.anchor.setTo(0.5, 0);
+        this.timeLabel.align = 'center';
+
+    },
     
+    updateStopwatch: function(){
+
+        var currentTime = new Date();
+        var timeDifference = this.startTime.getTime() - currentTime.getTime();
+
+        //Time elapsed in seconds
+        this.timeElapsed = Math.abs(timeDifference / 1000);
+
+        //Time remaining in seconds
+        
+        this.timeSurvived = this.timeElapsed + this.oldTime;
+        
+
+        //Convert seconds into minutes and seconds
+        var minutes = Math.floor(this.timeSurvived / 60);
+        var seconds = Math.floor(this.timeSurvived) - (60 * minutes);
+
+        //Display minutes, add a 0 to the start if less than 10
+        var result = (minutes < 10) ? "0" + minutes : minutes; 
+
+        //Display seconds, add a 0 to the start if less than 10
+        result += (seconds < 10) ? ":0" + seconds : ":" + seconds; 
+
+        this.timeLabel.text = result;
+ 
+    },
     
+    createTimer: function(totalTime){
+        console.log('creating timer');
+        this.game.add.text(15, 530, "Time remaining", {font: "18px Arial", fill: "#fff"}); 
+        this.timeoutLabel = 
+        this.game.add.text(50, 550, totalTime, {font: "30px Arial", fill: "#fff"}); 
+        this.timeoutLabel.anchor.setTo(0.5, 0);
+        this.timeoutLabel.align = 'center';
+
+    },
+    
+    updateTimer: function(totalTime){
+
+        var currentTime = new Date();
+        var timeDifference = this.startTime.getTime() - currentTime.getTime();
+
+        //Time elapsed in seconds
+        this.timeElapsed = Math.abs(timeDifference / 1000);
+
+        //Time remaining in seconds
+        
+        this.timeRemaining = totalTime - this.timeElapsed;
+        
+
+        //Convert seconds into minutes and seconds
+        var minutes = Math.floor(this.timeRemaining / 60);
+        var seconds = Math.floor(this.timeRemaining) - (60 * minutes);
+
+        //Display minutes, add a 0 to the start if less than 10
+        var result = (minutes < 10) ? "0" + minutes : minutes; 
+
+        //Display seconds, add a 0 to the start if less than 10
+        result += (seconds < 10) ? ":0" + seconds : ":" + seconds; 
+
+        this.timeoutLabel.text = result;
+ 
+    },
     gameOver: function() {
         this.game.paused = true;
         //this.player.destroy();
