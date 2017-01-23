@@ -1,7 +1,8 @@
 {
-    "duration": 10,
     "player": "womanOnDeer",
     "monkType": "panchawakkhi",
+    "bush1Frequency": 3,
+    "bush2Frequency": 4,
     "monks":
     [
         {

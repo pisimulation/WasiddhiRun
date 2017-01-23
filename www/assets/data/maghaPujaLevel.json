@@ -1,5 +1,4 @@
 {
-    "duration": 10,
     "player": "woman",
     "monkType": "maleMonk",
     "monks":
@@ -11,7 +10,7 @@
         },
         {
             "time": 6,
-            "frequency": 1.5,
+            "frequency": 1,
             "speedY": [150,120,160]
         },
         {
@@ -21,8 +20,8 @@
         },
         {
             "time": 16,
-            "frequency": 0.2,
-            "speedY": [230,250,100]
+            "frequency": 1,
+            "speedY": [100,140,200]
         }
     ]
 }

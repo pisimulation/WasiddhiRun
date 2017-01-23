@@ -40,6 +40,10 @@ Run.PreloadState = {
         this.load.spritesheet('levelInformer', 'assets/images/hey.png', 960, 1280, 3);
         this.load.image('bubble', 'assets/images/bubble.png');
         this.load.image('scroll', 'assets/images/scroll.png')
+        
+        this.load.image('bush1', 'assets/images/bush1.png');
+        this.load.image('bush2', 'assets/images/bush2.png');
+        
     },
     
     create: function() {

@@ -2,6 +2,8 @@
     "duration": 10,
     "player": "woman",
     "monkType": "pilgrimageMonk",
+    "templeFrequency": 2,
+    "lotusFrequency": 2,
     "monks":
     [
         {
