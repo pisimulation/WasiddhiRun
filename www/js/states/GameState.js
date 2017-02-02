@@ -30,17 +30,13 @@ Run.GameState = {
         this.TRANSFORM = transform ? transform : 2;
         this.NEXTTRANSFORM = 10;
         
-        this.TOBONUS = toBonus ? toBonus : 10;
-        this.NEXTBONUS = 60;
+        this.TOBONUS = toBonus ? toBonus : 5;
+        this.NEXTBONUS = 30;
         //this.BONUSLENGTH = 7;
         
         this.MAX_BONUS = 1;
         
-        this.TAKBATFREQ = 4;
-        this.MAGHAFREQ = 4;
-        this.ASALHAFREQ = 4;
-        this.PILGRIMAGEFREQ = 4;
-        this.VISAKHAFREQ = 4;
+        this.CARDFREQ = 20;
         
         //level data
         this.levels = ["normalLevel", "femaleMonkLevel"];
@@ -53,11 +49,23 @@ Run.GameState = {
         this.backgroundKey = backgroundKey ? backgroundKey : 'grass';
         
         this.oldTime = oldTime ? oldTime : 0;
-        
         console.log('oldTime = ' + this.oldTime);
         
         this.oldMonkIndex = monkIndex ? monkIndex : 0;
+        if(monkIndex) {
+            if(monkIndex >= 3) {
+                this.oldMonkIndex = 2;
+            }
+            else {
+                this.oldMonkIndex = monkIndex;
+            }
+        }
+        else {
+            this.oldMonkIndex = 0;
+        }
+        console.log('oldMonkIndex = ' + this.oldMonkIndex);
         this.currentMonkIndex = (this.currentLevel == "normalLevel") ? this.oldMonkIndex : 0;
+        console.log('currentMonkIndex = ' + this.currentMonkIndex);
     },
     
     create: function() {
@@ -100,6 +108,7 @@ Run.GameState = {
         this.femaleMonkTimerCounter = 0;
         this.informCounter = 0;
         
+        this.randomizeSpace();
         this.game.time.events.loop(10000,  this.randomizeSpace, this);
         
         //timer
@@ -112,6 +121,12 @@ Run.GameState = {
         this.gameStopwatch = this.game.time.events.loop(100, this.updateStopwatch, this);
         
         if(this.timeoutLabel) {
+            //if(this.player.gender == "man") {
+              //  var duration = 10;
+            //} else {
+              //  var duration = this.levelData.duration;
+            //}
+            //var duration = this.player.gender == "man" ? 10 : this.levelData
             this.gameTimer = this.game.time.events.loop(100, this.updateTimer, this, this.levelData.duration);
         }
         
@@ -137,19 +152,22 @@ Run.GameState = {
         
         //cards
         this.initCards();
+        this.game.time.events.loop(Phaser.Timer.SECOND * this.CARDFREQ, this.randomizeCards, this); 
         //this.takBatCardTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.TAKBATFREQ, this.createCard, this, this.takBatCards);
         //this.maghaCardTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.MAGHAFREQ, this.createCard, this, this.maghaCards);
-        this.asalhaCardTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.ASALHAFREQ, this.createCard, this, this.asalhaCards);
+        //this.asalhaCardTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.ASALHAFREQ, this.createCard, this, this.asalhaCards);
         //this.pilgrimageCardTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.PILGRIMAGEFREQ, this.createCard, this, this.pilgrimageCards);
         ////this.visakhaCardTimer = this.game.time.events.loop(Phaser.Timer.SECOND * this.VISAKHAFREQ, this.createCard, this, this.visakhaCards);
-
+        if(this.currentLevel == "femaleMonkLevel") {
+            this.createTimer(this.levelData.duration);
+        }
 
     },
     
     scheduleNextMonk: function(x, initPosition) {
-        console.log('scheduling nextmonk');
+        //console.log('scheduling nextmonk');
         nextMonk = this.levelData.monks[this.currentMonkIndex];
-        console.log("currentMonkIndex = " + this.currentMonkIndex);
+        //console.log("currentMonkIndex = " + this.currentMonkIndex);
         if(nextMonk) {
             var nextTime = 1000 * (nextMonk.time - (this.currentMonkIndex == 0 ? 0 : this.levelData.monks[this.currentMonkIndex - 1].time));
             this.nextMonkTimer = this.game.time.events.add(nextTime, function() {
@@ -190,9 +208,35 @@ Run.GameState = {
             this.monkCounter = 0;
             this.currentMonkIndex = 0;
             this.initMonks();
-            this.scheduleNextMonk(null, 1);
-            this.game.add.text(15, 530, "ปัญจวัคคีย์", {font: "18px Arial", fill: "#fff"});
-            this.monkText = this.game.add.text(15, 550, "", {font: "30px Arial", fill: "#fff"});
+            //this.scheduleNextMonk(null, 1);
+            this.monkCounter = 0;
+            this.game.add.text(this.world.centerX - 40, 480, "ปัญจวัคคีย์", {font: "18px Arial", fill: "#fff"});
+            this.monkText = this.game.add.text(this.world.centerX - 50, 500, "", {font: "30px Arial", fill: "#fff"});
+            this.createMonk(this.levelData.monkType, 200, null, 1);
+            //this.createMonk(this.levelData.monkType, 100, null, 1);
+            //this.monkCounter = 1;
+            this.game.time.events.add(Phaser.Timer.SECOND * 1, function() {
+                //this.randomizeSpace();
+                this.createMonk(this.levelData.monkType, 200, null, 1);
+            }, this);
+            
+            this.game.time.events.add(Phaser.Timer.SECOND * 3, function() {
+                //this.randomizeSpace();
+                this.createMonk(this.levelData.monkType, 200, null, 1);
+            }, this);
+            
+            this.game.time.events.add(Phaser.Timer.SECOND * 5, function() {
+                //this.randomizeSpace();
+                this.createMonk(this.levelData.monkType, 200, null, 1);
+            }, this);
+            
+            this.game.time.events.add(Phaser.Timer.SECOND * 6, function() {
+                //this.randomizeSpace();
+                this.createMonk(this.levelData.monkType, 200, null, 1);
+            }, this);
+            
+            this.createTimer(this.levelData.duration);
+            
             
             //bush1
             this.initBush("bush1");
@@ -238,6 +282,25 @@ Run.GameState = {
     },
      
     update: function() {
+        
+        if(this.currentLevel == "asalhaLevel") {
+            this.randomizeSpace();
+        }
+        /*
+        if(this.currentLevel == "maghaPujaLevel") {
+            if(this.monk.body) {
+                console.log(this.monk.)
+                if(this.monk.body.y > 200) {
+                    this.monkCounter++;
+                    console.log('!!!!!outOfBounds!!!!!');
+                    console.log("monk counter = " + this.monkCounter);
+                    this.monkText.setText(this.monkCounter);
+                }
+            }
+            
+        }*/
+        //CONTINUE!! for each body.y of monk in monks: check if it is outofbound
+        
         //level informer
         if(this.informCounter == 0) {
             if(this.currentLevel == "normalLevel" &&  this.player.gender == "man") {
@@ -360,7 +423,7 @@ Run.GameState = {
             this.game.time.events.remove(this.nextMonkTimer);
             
             this.die(this.player);
-            console.log('restarting game');
+            //console.log('restarting game');
             this.dieCounter++;
             this.game.time.events.add(Phaser.Timer.SECOND * 1.2, this.gameOver, this);
         }
@@ -390,13 +453,14 @@ Run.GameState = {
                                         this.switchPlayerTo("man");
                                         this.boonEmitter.destroy();
                                         this.startTimerAndSwitch(10, true);
+                                        //this.createTimer(10);
                                       },
                                       this);
         }
         
         
         //touchable
-        switch (this.levelData.monkType) {
+        switch(this.levelData.monkType) {
             case "maleMonk":
                 this.touchable = this.player.gender == "man" ? true : false;
                 break;
@@ -410,6 +474,24 @@ Run.GameState = {
                 this.touchable = this.player.gender == "womanOnDeer" ? true : false;
                 break;
         }
+        
+        //transition to femaleMonk bonus level
+         if(this.timeSurvived > this.TOBONUS && this.toBonusLevelCounter == 0 && !this.inBonusLevel) {
+             //this.currentLevel = ;
+             //this.loadLevel();
+             this.toBonusLevelCounter++;
+             console.log(this.toBonusLevelCounter);
+             this.game.state.start('GameState', true, false, "femaleMonkLevel", this.player.health, this.player.lotus, true, this.TRANSFORM, this.NEXTBONUS, null, this.timeSurvived, this.currentMonkIndex);
+             
+             //this.game.state.remove('GameState');
+         }
+         
+         //transition back from femaleMonk bonus level to normalLevel
+         if(this.inBonusLevel) {
+             this.game.time.events.add(Phaser.Timer.SECOND * this.levelData.duration, function() {
+                 this.game.state.start('GameState', true, false, "normalLevel", this.player.health, this.player.lotus, false, this.TRANSFORM, this.TOBONUS, null, this.timeSurvived, this.currentMonkIndex);
+             }, this);
+         }
         
         //add timer for femaleMonk bonus level
         if(this.currentLevel == "femaleMonkLevel" && this.femaleMonkTimerCounter == 0) {
@@ -428,7 +510,12 @@ Run.GameState = {
         }
         
         //time
-        if((this.timeElapsed >= this.levelData.duration) || (this.currentLevel == "maghaPujaLevel" && this.monkCounter > 1249) || (this.currentLevel == "asalhaLevel" && this.monkCounter > 4)){
+        if((this.timeElapsed >= this.levelData.duration) || (this.currentLevel == "maghaPujaLevel" && this.monkCounter > 10)){
+            /*
+            this.game.time.events.add(Phaser.Timer.SECOND * 3, function() {
+                this.game.state.start('GameState', true, false, "normalLevel", this.player.health, this.player.lotus, false, this.TRANSFORM, this.TOBONUS, null, this.timeSurvived, this.oldMonkIndex)
+            }, this);
+            */
             this.game.state.start('GameState', true, false, "normalLevel", this.player.health, this.player.lotus, false, this.TRANSFORM, this.TOBONUS, null, this.timeSurvived, this.oldMonkIndex)
         }
     },
@@ -523,10 +610,15 @@ Run.GameState = {
         if(gender == "woman") {
             this.stopTimer();
         }
-        var x = this.player.body.x;
-        var y = this.player.body.y;
-        this.player.destroy();
-        this.addPlayer(gender, x + 30, y + 30, this.player.health, this.player.lotus);  
+        this.player.tint = 0xff0000;
+        this.player.invisible = true;
+        this.game.time.events.add(Phaser.Timer.SECOND * 2, function() {
+            var x = this.player.body.x;
+            var y = this.player.body.y;
+            this.player.destroy();
+            this.addPlayer(gender, x + 30, y + 30, this.player.health, this.player.lotus); 
+        }, this);
+         
     },
     
     animate: function(sprite, movingArray, speed, repeat) {
@@ -582,47 +674,60 @@ Run.GameState = {
     },
     
     createMonk: function(monkType, monkSpeedY, x, initPosition) {
-        console.log('creating monk');
+        //console.log('creating monk at x = ' + x);
         var initX;
         if(this.currentLevel == "takBatThewoLevel" || 
            this.currentLevel == "pilgrimageLevel"){
             initX = x;
         }
         else {
-            var left = this.game.rnd.between(0, this.leftEdge);
+            //console.log('leftedge = ' + this.leftEdge);
+            //console.log('rightedge = ' + this.rightEdge);
+            var left = this.game.rnd.between(10, this.leftEdge);
             var right = this.game.rnd.between(this.rightEdge, this.game.world.width);
             initX = this.game.rnd.between(left, right);
+            //console.log('random between ' + left + ' and ' + right);
+            //console.log('initX = ' + initX);
         }
         if(!this.player.alive) {
             return;
         }
         
-        var monk = this.monks.getFirstExists(false);
+        //var monk = this.monks.getFirstExists(false);
+        this.monk = this.monks.getFirstExists(false);
         
-        if(!monk) {
-            monk = new Run.Monk(this.game, initX, 0, monkType, initPosition);
-            this.monks.add(monk);
+        if(!this.monk) {
+            this.monk = new Run.Monk(this.game, initX, 0, monkType, initPosition);
+            this.monks.add(this.monk);
         }
         else {
-            monk.reset(initX, 0);
+            this.monk.reset(initX, 0);
         }
-        
-        monk.body.setSize(13, 26, 10, 1);
-        monk.life = true;
-        monk.body.velocity.y = monkSpeedY;
-        if(this.currentLevel == "maghaPujaLevel") {
+        //console.log("this.monk.body.y" + this.monk.body.y);
+        this.monk.body.setSize(13, 26, 10, 1);
+        this.monk.life = true;
+        this.monk.body.velocity.y = monkSpeedY;
+        if(this.currentLevel == "maghaPujaLevel") {// && !monk.onOutOfBounds) {
             this.monkCounter++;
-            console.log("monk counter = " + this.monkCounter);
+            //console.log("monk counter = " + this.monkCounter);
             this.monkText.setText(this.monkCounter);
+            //if(this.monkCounter = 10) {
+                //console.log("all monks done");
+                //return;
+            //}
         }
         
-        if(this.currentLevel == "asalhaLevel" && monk.inWorld) {
-            var puns = ["pun1", "pun2", "pun3", "pun4", "pun5"];
+        if(this.currentLevel == "asalhaLevel") {
+            var puns = ["โกณฑัญญะ", "วัปปะ", "ภัททิยะ", "มหานามะ", "อัสสชิ"];
             this.currentPun = puns[this.monkCounter];
             console.log("current pun: " + puns[this.monkCounter]);
             this.monkText.setText(puns[this.monkCounter]);
             this.monkCounter++;
             console.log("monk counter = " + this.monkCounter);
+            //if(this.monkCounter == 5) {
+                //console.log("all monks done");
+                //return;
+            //}
         }
         
     },
@@ -879,8 +984,30 @@ Run.GameState = {
         this.game.state.start('GameState', true, false, "pilgrimageLevel", this.player.health, this.player.lotus, true, this.TRANSFORM, this.TOBONUS, null, this.timeSurvived, this.currentMonkIndex);
     },
     
+    randomizeCards: function() {
+        var cardGroup;
+        var cards = ["takBat", "magha", "asalha", "pilgrimage"];
+        var selected = cards[Math.floor(Math.random()*cards.length)];
+        switch(selected) {
+            case "takBat":
+                cardGroup = this.takBatCards;
+                break;
+            case "magha":
+                cardGroup = this.maghaCards;
+                break;
+            case "asalha":
+                cardGroup = this.asalhaCards;
+                break;
+            case "pilgrimage":
+                cardGroup = this.pilgrimageCards;
+                break;
+        }
+        
+        this.createCard(cardGroup);
+    },
+    
     randomizeSpace: function() {
-        this.leftEdge = this.game.rnd.between(0,this.game.world.width - 200);
+        this.leftEdge = this.game.rnd.between(10,this.game.world.width - 200);
         this.rightEdge = this.leftEdge + 200;
     },
     
@@ -989,12 +1116,35 @@ Run.GameState = {
         this.gameover.scale.y = 0.5;
         this.gameover.anchor.setTo(0.5);
         
+        //CONTINUE RESTART OPTION AFTER GAME OVER
+        this.game.add.text(this.game.world.centerX - 20, this.game.world.centerY + 130, 'ENTER to restart', { font: '24px Arial', fill: '#fff' });
+            
+        var enterKey = this. game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
+        enterKey.onDown.add(function() {
+            
+            console.log('enter is pressed'); 
+            console.log('HOW TO RESTART GAME?????');
+            //this.monks.removeAll();
+            //this.temples.removeAll();
+            //this.lotuses.removeAll();
+            //this.game.world.clear();
+            //this.game.world.removeAll();
+            //this.game.state.restart(true, true);
+            //this.game.state.start('HomeState');
+            //this.game.state.start('PreloadState');
+            //this.game.state.shutdown();
+            location.reload();
+            //this.game.state.start('GameState');
+            //this.game.state.start('GameState', true, true,"normalLevel")
+        }, this);
+        
     },
-    
+    /*
     gameFinished: function() {
         this.game.paused = true;
         this.game.restart();
     }
+    */
 };
 
 /*

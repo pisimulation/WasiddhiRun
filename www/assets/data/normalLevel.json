@@ -17,14 +17,14 @@
             "speedY": [150,120,140]
         },
         {
-            "time": 11,
-            "frequency": 2,
-            "speedY": [150,180,200]   
+            "time": 15,
+            "frequency": 1.5,
+            "speedY": [100,180,200]   
         },
         {
             "time": 16,
-            "frequency": 1.5,
-            "speedY": [200,120,150]
+            "frequency": 1.2,
+            "speedY": [100,120,140]
         }
     ]
 }
