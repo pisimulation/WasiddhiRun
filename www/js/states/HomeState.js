@@ -12,8 +12,12 @@ Run.HomeState = {
                                               this.game.world.width,
                                               this.game.world.height,
                                               'grass');
-        this.background.inputEnabled = true;
-        this.background.events.onInputDown.add(function() {
+        //this.background.inputEnabled = true;
+        //this.background.events.onInputDown.add(function() {
+        //    this.game.state.start('GameState');
+        //}, this);
+        var enterKey = this.game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
+        enterKey.onDown.add(function() {
             this.game.state.start('GameState');
         }, this);
         this.logo = this.add.sprite(this.game.world.centerX, this.game.world.centerY - 210, 'wingLobPrah', 0);
@@ -27,12 +31,13 @@ Run.HomeState = {
         this.yai.scale.x = 0.4;
         this.yai.scale.y = 0.4;
         Run.GameState.animate(this.yai, [0,1,2,3], 5);
-        
+        /*
         this.touch = this.add.sprite(this.game.world.width - 230, this.game.world.height - 50, 'touchToStart')
         this.touch.anchor.setTo(0.5);
         this.touch.scale.x = 0.3;
         this.touch.scale.y = 0.3;
         this.touch.scale.y = 0.3;
-        //this.game.add.text(30, this.game.world.height - 50, 'TOUCH TO START');
+        */
+        this.game.add.text(30, this.game.world.height - 50, 'ENTER TO START', { font: '30px Arial', fill: '#315', fontWeight: 'bold'});
     }
 };

@@ -27,11 +27,11 @@ Run.GameState = {
         
         this.INIT_HEALTH = oldHealth ? oldHealth : 0;
         this.INIT_LOTUS = oldLotus ? oldLotus : 0;
-        this.TRANSFORM = transform ? transform : 2;
-        this.NEXTTRANSFORM = 10;
+        this.TRANSFORM = transform ? transform : 15;
+        this.NEXTTRANSFORM = 20;
         
-        this.TOBONUS = toBonus ? toBonus : 5;
-        this.NEXTBONUS = 30;
+        this.TOBONUS = toBonus ? toBonus : 50;
+        this.NEXTBONUS = 120;
         //this.BONUSLENGTH = 7;
         
         this.MAX_BONUS = 1;
@@ -302,27 +302,28 @@ Run.GameState = {
         //CONTINUE!! for each body.y of monk in monks: check if it is outofbound
         
         //level informer
-        if(this.informCounter == 0) {
+        if(this.informCounter == 0 && !(this.currentLevel == "normalLevel")) {
+            /*
             if(this.currentLevel == "normalLevel" &&  this.player.gender == "man") {
                 this.clearText();
                 this.content = [
                     " ",
                     "ท่านสั่งสมบุญมากพอแล้ว"
-                    //"ได้เกิดเป็นเพศบริสุทธิ์10วิ",
-                    //"รีบhigh5พระเก็บบุญเร็ว"
+                    "ได้เกิดเป็นเพศบริสุทธิ์10วิ",
+                    "รีบhigh5พระเก็บบุญเร็ว"
                 ];
             }
             else if(this.currentLevel == "normalLevel" && this.player.gender == "woman") {
-                this.content = [
-                    " ",
-                    "ระวังบุญหกบุญหล่นนะยาย"
-                    //"บุญหมดโดนธรณีสูบนะ",
-                    //"เจอดอกบัวรีบเก็บนะยาย",
-                    //"เอาไปถวายวัดต่อบุญได้"
+                var options = [
+                    [" ", "ระวังบุญหกบุญหล่นนะยาย"],
+                    [" ", "บุญหมดโดนธรณีสูบนะ"],
+                    [" ", "ยายหลบพระหน่อยจ้า"],
+                    [" ", "เจอดอกบัวรีบเก็บนะยาย"]
                 ];
-                
+                this.content = options[Math.floor(Math.random()*options.length)];
             }
-            else if(this.currentLevel == "femaleMonkLevel") {
+            */
+            if(this.currentLevel == "femaleMonkLevel") {
                 this.content = [
                     " ",
                     "ด่านโบนัสภิกษุณี",
@@ -1112,30 +1113,27 @@ Run.GameState = {
     gameOver: function() {
         this.game.paused = true;
         this.gameover = this.add.sprite(this.game.world.centerX, this.game.world.centerY, 'gameover');
-        this.gameover.scale.x = 0.5;
-        this.gameover.scale.y = 0.5;
+        this.gameover.scale.x = 0.4;
+        this.gameover.scale.y = 0.4;
         this.gameover.anchor.setTo(0.5);
         
-        //CONTINUE RESTART OPTION AFTER GAME OVER
-        this.game.add.text(this.game.world.centerX - 20, this.game.world.centerY + 130, 'ENTER to restart', { font: '24px Arial', fill: '#fff' });
-            
-        var enterKey = this. game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
+        
+        this.game.add.text(this.game.world.centerX - 120, this.game.world.centerY + 190, 'ENTER to restart', { font: '30px Arial', fill: '#007', fontWeight: 'bold'});
+        
+        //this.game.add.text(this.game.world.centerX - 100, this.game.world.centerY - 100, "ท่านโดนธรณีสูบ", { font: '45px Arial', fill: '#fff' });
+        //this.game.add.text(this.game.world.centerX - 20, this.game.world.centerY - 50, "อายุขัย " + this.timeSurvived, { font: '30px Arial', fill: '#fff' });
+        
+        
+        //this.content = [
+        //        " ",
+        //        "ท่านโดนธรณีสูบ",
+        //        "อายุขัย " + this.timeSurvived
+        //    ];
+        //this.addInformer();    
+        var enterKey = this.game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
         enterKey.onDown.add(function() {
-            
-            console.log('enter is pressed'); 
-            console.log('HOW TO RESTART GAME?????');
-            //this.monks.removeAll();
-            //this.temples.removeAll();
-            //this.lotuses.removeAll();
-            //this.game.world.clear();
-            //this.game.world.removeAll();
-            //this.game.state.restart(true, true);
-            //this.game.state.start('HomeState');
-            //this.game.state.start('PreloadState');
-            //this.game.state.shutdown();
             location.reload();
-            //this.game.state.start('GameState');
-            //this.game.state.start('GameState', true, true,"normalLevel")
+            
         }, this);
         
     },
