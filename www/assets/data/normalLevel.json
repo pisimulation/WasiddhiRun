@@ -23,7 +23,7 @@
         },
         {
             "time": 16,
-            "frequency": 1.2,
+            "frequency": 1,
             "speedY": [100,120,140]
         }
     ]

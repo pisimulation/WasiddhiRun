@@ -27,16 +27,16 @@ Run.GameState = {
         
         this.INIT_HEALTH = oldHealth ? oldHealth : 0;
         this.INIT_LOTUS = oldLotus ? oldLotus : 0;
-        this.TRANSFORM = transform ? transform : 15;
-        this.NEXTTRANSFORM = 20;
+        this.TRANSFORM = transform ? transform : 60;
+        this.NEXTTRANSFORM = 140;
         
-        this.TOBONUS = toBonus ? toBonus : 50;
-        this.NEXTBONUS = 120;
+        this.TOBONUS = toBonus ? toBonus : 120;
+        this.NEXTBONUS = 120000;
         //this.BONUSLENGTH = 7;
         
         this.MAX_BONUS = 1;
         
-        this.CARDFREQ = 20;
+        this.CARDFREQ = 25;
         
         //level data
         this.levels = ["normalLevel", "femaleMonkLevel"];
@@ -165,10 +165,12 @@ Run.GameState = {
     },
     
     scheduleNextMonk: function(x, initPosition) {
-        //console.log('scheduling nextmonk');
+        console.log('scheduling nextmonk');
         nextMonk = this.levelData.monks[this.currentMonkIndex];
-        //console.log("currentMonkIndex = " + this.currentMonkIndex);
+        console.log("currentMonkIndex = " + this.currentMonkIndex);
         if(nextMonk) {
+            console.log("nextMonk.time" + nextMonk.time);
+            
             var nextTime = 1000 * (nextMonk.time - (this.currentMonkIndex == 0 ? 0 : this.levelData.monks[this.currentMonkIndex - 1].time));
             this.nextMonkTimer = this.game.time.events.add(nextTime, function() {
                 this.monkTimer = this.game.time.events.loop(Phaser.Timer.SECOND * nextMonk.frequency, this.createMonk, this, this.levelData.monkType, this.getRandomSpeedY(nextMonk), x, initPosition);
@@ -511,7 +513,7 @@ Run.GameState = {
         }
         
         //time
-        if((this.timeElapsed >= this.levelData.duration) || (this.currentLevel == "maghaPujaLevel" && this.monkCounter > 10)){
+        if((this.timeElapsed >= this.levelData.duration) || (this.currentLevel == "maghaPujaLevel" && this.monkCounter > 1250)){
             /*
             this.game.time.events.add(Phaser.Timer.SECOND * 3, function() {
                 this.game.state.start('GameState', true, false, "normalLevel", this.player.health, this.player.lotus, false, this.TRANSFORM, this.TOBONUS, null, this.timeSurvived, this.oldMonkIndex)
@@ -675,7 +677,7 @@ Run.GameState = {
     },
     
     createMonk: function(monkType, monkSpeedY, x, initPosition) {
-        //console.log('creating monk at x = ' + x);
+        console.log('creating monk at x = ' + x);
         var initX;
         if(this.currentLevel == "takBatThewoLevel" || 
            this.currentLevel == "pilgrimageLevel"){
@@ -710,7 +712,7 @@ Run.GameState = {
         this.monk.body.velocity.y = monkSpeedY;
         if(this.currentLevel == "maghaPujaLevel") {// && !monk.onOutOfBounds) {
             this.monkCounter++;
-            //console.log("monk counter = " + this.monkCounter);
+            console.log("monk counter = " + this.monkCounter);
             this.monkText.setText(this.monkCounter);
             //if(this.monkCounter = 10) {
                 //console.log("all monks done");
@@ -1049,6 +1051,7 @@ Run.GameState = {
     
     updateStopwatch: function(){
 
+        console.log("updating stopwatch")
         var currentTime = new Date();
         var timeDifference = this.startTime.getTime() - currentTime.getTime();
 
