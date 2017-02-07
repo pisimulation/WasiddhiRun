@@ -1,6 +1,6 @@
 # Wasiddhi Run BETA
-### Play
-<p>https://coconutpi.github.io/WasiddhiRun/</p>
+## Play
+<p>https://coconutpi.github.io/WasiddhiRun</p>
 ### Tutorial
 <p>https://coconutpi.github.io/WasiddhiRun/www/tutorial.html</p>
 ### What Is It About?
