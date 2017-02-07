@@ -1,5 +1,5 @@
 # Wasiddhi Run BETA
-## To Play
+## Play Here
 <p>https://coconutpi.github.io/WasiddhiRun/</p>
 
 ## About the Game
