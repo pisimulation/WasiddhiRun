@@ -1,7 +1,8 @@
 # Wasiddhi Run BETA
 ### Play
 <p>https://coconutpi.github.io/WasiddhiRun/</p>
-
+### Tutorial
+<p>https://coconutpi.github.io/WasiddhiRun/www/tutorial.html</p>
 ### What Is It About?
 <p>
 This educational running game depicts (Thai) Buddhism through Wasiddhi's, or women's, perspective. Wasiddhi is a female character from Danish literature, Der Pilger Kamanita. In this game, Wasiddhi needs to avoid touching monks, otherwise she will be sinful because monks are not allowed to touch or to be touched by women.
