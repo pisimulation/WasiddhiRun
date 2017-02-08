@@ -44,6 +44,8 @@ Run.PreloadState = {
         this.load.image('bush1', 'assets/images/bush1.png');
         this.load.image('bush2', 'assets/images/bush2.png');
         
+        this.load.image('tutorial', 'assets/images/tutorial.png');
+        
     },
     
     create: function() {

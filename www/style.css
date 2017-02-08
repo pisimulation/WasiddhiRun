@@ -1,0 +1,42 @@
+body {
+  background-color: floralwhite;
+  font-family: Arial, Helvetica, sans-serif;
+  padding: 10px;
+  margin: 10px;
+}
+
+.title {
+    max-width: 70ch;
+}
+.english {
+    color: darkslateblue;
+    font-famliy: Helvetica;
+}
+.block > li {
+    font-famliy: Helvetica;
+    overflow: hidden;
+    color:darkslategray
+    max-width: 65ch;
+}
+.block {
+    background-color: bisque;
+    max-width: 65ch;
+}
+.block > h2{
+    background-color: darksalmon;
+    max-width: 65ch;
+}
+.about {
+    background-color: beige;
+    max-width: 65ch;
+}
+.about > h3 {
+    background-color: deepskyblue;
+    max-width: 65ch;
+}
+p {
+    color: darkslateblue;
+    font-famliy: Arial;
+    overflow: hidden;
+    max-width: 65ch;
+}
