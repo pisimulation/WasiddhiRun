@@ -39,5 +39,23 @@ Run.HomeState = {
         this.touch.scale.y = 0.3;
         */
         this.game.add.text(30, this.game.world.height - 50, 'ENTER TO START', { font: '30px Arial', fill: '#315', fontWeight: 'bold'});
+        //this.game.add.text(30, this.game.world.height - 70, 'tutorial',
+                           //{ font: '30px Arial', fill: '#315', fontWeight: 'bold'},
+                           //function () {
+                                // open in the same window (like clicking a link)
+                                //window.location.href = "http://www.google.com";
+                                // open in a new window instead (this will likely be blocked by popup blockers though)
+                                //window.open("http://www.google.com", "_blank");}, this);
+    //});
+    
+        this.tutorial = this.game.add.button(this.game.world.width - 85, -2, 'tutorial', function() {
+            // open in the same window (like clicking a link)
+            //window.location.href = "http://www.google.com";
+            // open in a new window instead (this will likely be blocked by popup blockers though)
+            window.open("https://coconutpi.github.io/WasiddhiRun/www/tutorial.html");}, this);
+        this.tutorial.scale.x = 3;
+        this.tutorial.scale.y = 3;
+        
+    
     }
 };
