@@ -2,7 +2,7 @@
 
 ## Play
 
-https://coconutpi.github.io/WasiddhiRun
+https://pisimulation.github.io/WasiddhiRun
 
 ## Tutorial
 
