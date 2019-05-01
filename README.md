@@ -6,7 +6,7 @@ https://coconutpi.github.io/WasiddhiRun
 
 ## Tutorial
 
-https://coconutpi.github.io/WasiddhiRun/www/tutorial.html
+https://pisimulation.github.io/WasiddhiRun/www/tutorial.html
 
 ## What Is It About?
 
