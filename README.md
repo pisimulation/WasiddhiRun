@@ -2,7 +2,7 @@
 
 ## Play
 
-https://pisimulation.github.io/WasiddhiRun/
+https://pisimulation.github.io/WasiddhiRun/www/index.html
 
 ## Tutorial
 
