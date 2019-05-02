@@ -52,7 +52,7 @@ Run.HomeState = {
             // open in the same window (like clicking a link)
             //window.location.href = "http://www.google.com";
             // open in a new window instead (this will likely be blocked by popup blockers though)
-            window.open("https://coconutpi.github.io/WasiddhiRun/www/tutorial.html");}, this);
+            window.open("https://pisimulation.github.io/WasiddhiRun/www/tutorial.html");}, this);
         this.tutorial.scale.x = 3;
         this.tutorial.scale.y = 3;
         
